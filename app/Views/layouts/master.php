@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
@@ -22,6 +23,7 @@
 
     <?= $this->renderSection('css') ?>
 </head>
+
 <body class="d-flex flex-column min-vh-100">
 
     <!-- Navbar, header, dll -->
@@ -40,4 +42,5 @@
     <script src="<?= base_url('js/scripts.js') ?>"></script>
     <?= $this->renderSection('js') ?>
 </body>
+
 </html>
