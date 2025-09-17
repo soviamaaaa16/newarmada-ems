@@ -1,15 +1,15 @@
 <?php
 
 namespace App\Controllers;
-
-use App\Controllers\BaseController;
+use CodeIgniter\API\ResponseTrait;   // <-- tambahkan ini
 use App\Models\FolderModel;
 use App\Models\FileModel;
-use App\Models\FileTypeModel;
+use App\Controllers\BaseController;
 use CodeIgniter\HTTP\ResponseInterface;
 
-class Drive extends BaseController
+class DriveController extends BaseController
 {
+    use ResponseTrait;
     protected FolderModel $folders;
     protected FileModel $files;
 
@@ -21,6 +21,7 @@ class Drive extends BaseController
 
     private function uid(): int
     {
+        session()->set('user_id', 1);
         return (int) (session('user_id') ?? 1);
     }
 
@@ -60,7 +61,6 @@ class Drive extends BaseController
             return $this->response->setStatusCode(422)->setJSON(['message' => 'Nama folder wajib diisi']);
         }
 
-        // Cegah duplikasi nama di level yang sama untuk user yang sama
         $exists = $this->folders->where([
             'user_id' => $userId,
             'parent_id' => ($parentId === '' ? null : (int) $parentId),
@@ -84,25 +84,28 @@ class Drive extends BaseController
     public function upload()
     {
         $userId = $this->uid();
-        $folderId = $this->request->getPost('folder_id'); // boleh null/'' untuk root
+        $folderId = $this->request->getPost('folder_id'); // '' saat di root
 
-        // validasi folder milik user (kecuali root)
-        if ($folderId !== '' && $folderId !== null) {
-            $f = $this->folders->where('user_id', $userId)->find((int) $folderId);
-            if (!$f)
+        // Pastikan folder target (root => buat/ambil root folder id)
+        if ($folderId === '' || $folderId === null) {
+            $folderId = $this->ensureRootFolder($userId); // <<-- penting utk files.folder_id NOT NULL
+        } else {
+            $folderId = (int) $folderId;
+            $f = $this->folders->where('user_id', $userId)->find($folderId);
+            if (!$f) {
                 return $this->fail('Folder tidak ditemukan', 404);
+            }
         }
 
         $file = $this->request->getFile('file');
         if (!$file || !$file->isValid()) {
-            return $this->failValidationErrors('File tidak valid');
+            return $this->failValidationErrors(['file' => 'File tidak valid']);
         }
 
-        // Batasan sesuai kebutuhanmu
         $rules = [
             'file' => [
                 'uploaded[file]',
-                'max_size[file,20480]',
+                'max_size[file,20480]', // 20MB
                 'ext_in[file,jpg,jpeg,png,gif,webp,pdf,xls,xlsx,csv]',
                 'mime_in[file,image/jpg,image/jpeg,image/png,image/gif,image/webp,application/pdf,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv]',
             ],
@@ -111,35 +114,67 @@ class Drive extends BaseController
             return $this->failValidationErrors($this->validator->getErrors());
         }
 
-        // Simpan fisik di writable/uploads/drive/{user_id}/{folder_id|null}/
-        $dir = WRITEPATH . 'uploads/drive/' . $userId . '/' . (($folderId === '' || $folderId === null) ? 'root' : (int) $folderId) . '/';
-        if (!is_dir($dir))
+        // ======= AMBIL METADATA SEBELUM MOVE() =======
+        $clientName = $file->getClientName();
+        $clientExt = strtolower(pathinfo($clientName, PATHINFO_EXTENSION));
+        $sizeBytes = (int) $file->getSize();
+
+        // Ambil MIME dari temp sebelum dipindah (aman)
+        $mimeType = $file->getMimeType() ?: ($file->getClientMimeType() ?: 'application/octet-stream');
+
+        // ======= MOVE KE LOKASI TUJUAN =======
+        $targetSub = (string) $folderId; // karena folderId pasti ada sekarang
+        $dir = WRITEPATH . 'uploads/drive/' . $userId . '/' . $targetSub . '/';
+        if (!is_dir($dir)) {
             @mkdir($dir, 0775, true);
+        }
 
         $randomName = $file->getRandomName();
         $file->move($dir, $randomName);
 
-        $ext = strtolower($file->getExtension() ?: pathinfo($file->getClientName(), PATHINFO_EXTENSION));
-        $type = \App\Models\FileTypeModel::mapExtToType($ext);
+        // (opsional) Validasi MIME SETELAH pindah berdasarkan file di lokasi baru:
+        // $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        // $mimeType = finfo_file($finfo, $dir . $randomName) ?: $mimeType;
+        // finfo_close($finfo);
+
+        $typeBucket = \App\Models\FileTypeModel::mapExtToType($clientExt);
 
         $id = $this->files->insert([
             'user_id' => $userId,
-            'folder_id' => ($folderId === '' || $folderId === null) ? null : (int) $folderId,
-            'name' => $file->getClientName(),       // nama asli
-            'file_path' => 'uploads/drive/' . $userId . '/' . (($folderId === '' || $folderId === null) ? 'root' : (int) $folderId) . '/' . $randomName,
-            'file_type' => $type,                        // VARCHAR(50) sesuai tabel
-            'size' => (int) $file->getSize(),
+            'folder_id' => $folderId, // wajib ada (NOT NULL)
+            'name' => $clientName,
+            'file_path' => 'uploads/drive/' . $userId . '/' . $targetSub . '/' . $randomName,
+            'file_type' => $typeBucket,      // 'image' | 'pdf' | 'excel' | ext fallback
+            'size' => $sizeBytes,
             'created_at' => date('Y-m-d H:i:s'),
             'created_by' => (string) (session('username') ?? null),
         ], true);
 
-        return $this->response->setJSON([
+        return $this->respond([
             'id' => $id,
-            'name' => $file->getClientName(),
-            'size' => (int) $file->getSize()
-        ]);
+            'name' => $clientName,
+            'size' => $sizeBytes,
+            'mime' => $mimeType,
+        ], 200);
     }
+    private function ensureRootFolder(int $userId): int
+    {
+        $root = $this->folders
+            ->where('user_id', $userId)
+            ->where('parent_id', null)
+            ->where('name', 'Root')
+            ->first();
 
+        if ($root)
+            return (int) $root['id'];
+
+        return (int) $this->folders->insert([
+            'user_id' => $userId,
+            'parent_id' => null,
+            'name' => 'Root',
+            'created_at' => date('Y-m-d H:i:s'),
+        ], true);
+    }
     public function download($id)
     {
         $userId = $this->uid();
