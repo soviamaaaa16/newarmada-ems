@@ -36,9 +36,9 @@
         <?php if(empty($folders) && empty($files)): ?>
             <!-- Jika kosong -->
             <div class="col-12 text-center my-5 empty-state">
-                <img src="<?= base_url('assets/img/add_file.svg') ?>" 
+                <img src="<?= base_url('assets/img/undraw.svg') ?>" 
                      alt="Belum ada file atau folder" 
-                     width="200">
+                     width="300">
                 <h5 class="mt-3 text-muted">
                     Klik buat folder atau upload file untuk menambahkan
                 </h5>
