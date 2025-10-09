@@ -4155,8 +4155,8 @@ textarea.form-control-lg {
 }
 
 .card {
-  --bs-card-spacer-y: 1rem;
-  --bs-card-spacer-x: 1rem;
+  --bs-card-spacer-y: 0.5rem;
+  --bs-card-spacer-x: 0.5rem;
   --bs-card-title-spacer-y: 0.5rem;
   --bs-card-border-width: 0.125rem;
   --bs-card-border-color: var(--bs-border-color-translucent);
@@ -4169,7 +4169,7 @@ textarea.form-control-lg {
   --bs-card-cap-color: ;
   --bs-card-height: ;
   --bs-card-color: ;
-  --bs-card-bg: #fff;
+  --bs-card-bg: #f0f4f9;
   --bs-card-img-overlay-padding: 1rem;
   --bs-card-group-margin: 0.75rem;
   position: relative;
@@ -4210,6 +4210,7 @@ textarea.form-control-lg {
   flex: 1 1 auto;
   padding: var(--bs-card-spacer-y) var(--bs-card-spacer-x);
   color: var(--bs-card-color);
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 .card-title {
@@ -6918,6 +6919,8 @@ textarea.form-control-lg {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  font-size: medium;
 }
 
 .vr {
@@ -11058,3 +11061,53 @@ html {
   font-weight: 400; 
   color: #6c757d;  
 }
+
+.bi-folder-fill::before  {
+  color: #141619;
+  font-size: small;
+}
+
+.file-card {
+  border-radius: 12px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.file-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+.file-preview {
+  height: 150px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8f9fa;
+}
+
+.hover-elevate {
+  transition: all 0.2s ease-in-out;
+}
+
+.hover-elevate:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  background-color: #f8f9fa !important;
+}
+
+button.btn i {
+  vertical-align: middle;
+}
+
+#lightboxOverlay {
+  backdrop-filter: blur(3px);
+  transition: opacity 0.25s ease;
+}
+
+#lightboxOverlay.show {
+  opacity: 1;
+}
+
+
+
+
+
