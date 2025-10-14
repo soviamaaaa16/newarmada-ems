@@ -29,7 +29,6 @@ class DriveController extends BaseController
     public function index(?int $folderId = null)
     {
         $userId = $this->uid();
-
         // Jika folderId diberikan, pastikan milik user
         $currentFolder = null;
         if ($folderId !== null) {
@@ -41,14 +40,63 @@ class DriveController extends BaseController
 
         $parentId = $folderId ?? null;
 
+        // Jika ada search query, tampilkan hasil pencarian
+        // Normal view tanpa search
         $data = [
             'currentFolder' => $currentFolder,
             'breadcrumbs' => $folderId ? $this->folders->breadcrumb($folderId) : [],
             'folders' => $this->folders->listChildren($userId, $parentId),
             'files' => $this->files->listInFolder($userId, $parentId),
+            'searchQuery' => null,
+            'isSearch' => false,
         ];
 
         return view('drive', $data);
+    }
+
+    public function search($searchQuery = '')
+    {
+        $userId = $this->uid();
+        $searchQuery = trim(urldecode($searchQuery));
+
+        // Validasi input
+        if (strlen($searchQuery) < 2) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Query minimal 2 karakter',
+                'query' => $searchQuery,
+                'folders' => [],
+                'files' => [],
+            ])->setStatusCode(400);
+        }
+
+        try {
+            // Cari di folders
+            $folders = $this->folders->search($userId, $searchQuery);
+
+            // Cari di files
+            $files = $this->files->search($userId, $searchQuery);
+
+            // Format response
+            $response = [
+                'success' => true,
+                'query' => $searchQuery,
+                'folders' => $folders ?: [],
+                'files' => $files ?: [],
+                'total' => (count($folders ?: []) + count($files ?: [])),
+            ];
+
+            return $this->response->setJSON($response);
+        } catch (\Exception $e) {
+            log_message('error', 'Search error: ' . $e->getMessage());
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mencari',
+                'query' => $searchQuery,
+                'folders' => [],
+                'files' => [],
+            ])->setStatusCode(500);
+        }
     }
 
     public function createFolder()
@@ -68,7 +116,7 @@ class DriveController extends BaseController
         ])->first();
 
         if ($exists) {
-            return $this->response->setStatusCode(409)->setJSON(['message' => 'Nama folder sudah ada di lokasi ini']);
+            return redirect()->back()->withInput()->with('errors', ['message' => 'Nama folder sudah ada di lokasi ini']);
         }
 
         $id = $this->folders->insert([
@@ -78,8 +126,10 @@ class DriveController extends BaseController
             'created_at' => date('Y-m-d H:i:s'),
         ], true);
 
-        return $this->response->setJSON(['id' => $id, 'name' => $name]);
+        // return $this->response->setJSON(['id' => $id, 'name' => $name]);
+        return redirect()->back()->withInput()->with('success', ['message' => 'success to create folder.']);
     }
+
 
     public function upload()
     {
@@ -150,12 +200,14 @@ class DriveController extends BaseController
             'created_by' => (string) (session('username') ?? null),
         ], true);
 
-        return $this->respond([
-            'id' => $id,
-            'name' => $clientName,
-            'size' => $sizeBytes,
-            'mime' => $mimeType,
-        ], 200);
+        // return $this->respond([
+        //     'id' => $id,
+        //     'name' => $clientName,
+        //     'size' => $sizeBytes,
+        //     'mime' => $mimeType,
+        // ], 200);
+
+        return redirect()->back()->withInput()->with('success', ['message' => 'success to save data.']);
     }
     private function ensureRootFolder(int $userId): int
     {
@@ -231,5 +283,153 @@ class DriveController extends BaseController
         $dir = WRITEPATH . 'uploads/drive/' . $userId . '/' . $folderId . '/';
         if (is_dir($dir))
             @rmdir($dir);
+    }
+
+
+    public function renameFile()
+    {
+        $userId = $this->uid();
+        $fileId = (int) $this->request->getPost('id');
+        $newName = trim((string) $this->request->getPost('name'));
+
+        // Validasi input
+        if (!$fileId) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'ID file tidak valid',
+            ])->setStatusCode(400);
+        }
+
+        if ($newName === '') {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Nama file tidak boleh kosong',
+            ])->setStatusCode(422);
+        }
+
+        // Cari file
+        $file = $this->files->where('user_id', $userId)->find($fileId);
+        if (!$file) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'File tidak ditemukan',
+            ])->setStatusCode(404);
+        }
+
+        // Ambil ekstensi dari nama file asli
+        $oldName = $file['name'];
+        $fileExtension = pathinfo($oldName, PATHINFO_EXTENSION);
+
+        // Jika nama baru belum ada ekstensi, tambahkan ekstensi asli
+        if (!preg_match('/\.' . preg_quote($fileExtension) . '$/i', $newName)) {
+            $newName = $newName . '.' . $fileExtension;
+        }
+
+        try {
+            // Update nama file di database
+            $this->files->update($fileId, [
+                'name' => $newName,
+                'updated_at' => date('Y-m-d H:i:s'),
+            ]);
+
+            // Update nama file fisik di server
+            $oldFilePath = WRITEPATH . $file['file_path'];
+            if (file_exists($oldFilePath)) {
+                // Ambil direktori dari file path lama
+                $fileDir = dirname($oldFilePath);
+                $newFilePath = $fileDir . '/' . $newName;
+
+                // Rename file fisik
+                if (!rename($oldFilePath, $newFilePath)) {
+                    throw new \Exception('Gagal mengubah nama file fisik');
+                }
+
+                // Update file_path di database
+                $newFilePathRelative = str_replace(WRITEPATH, '', $newFilePath);
+                $this->files->update($fileId, [
+                    'file_path' => $newFilePathRelative,
+                ]);
+            }
+
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => 'Nama file berhasil diubah',
+                'newName' => $newName,
+            ]);
+
+        } catch (\Exception $e) {
+            log_message('error', 'Error rename file: ' . $e->getMessage());
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ])->setStatusCode(500);
+        }
+    }
+
+    public function renameFolder()
+    {
+        $userId = $this->uid();
+        $folderId = (int) $this->request->getPost('id');
+        $newName = trim((string) $this->request->getPost('name'));
+
+        // Validasi input
+        if (!$folderId) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'ID folder tidak valid',
+            ])->setStatusCode(400);
+        }
+
+        if ($newName === '') {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Nama folder tidak boleh kosong',
+            ])->setStatusCode(422);
+        }
+
+        // Cari folder
+        $folder = $this->folders->where('user_id', $userId)->find($folderId);
+        if (!$folder) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Folder tidak ditemukan',
+            ])->setStatusCode(404);
+        }
+
+        // Cek apakah nama folder sudah ada di lokasi yang sama
+        $exists = $this->folders->where([
+            'user_id' => $userId,
+            'parent_id' => $folder['parent_id'],
+            'name' => $newName,
+            'id !=' => $folderId,
+        ])->first();
+
+        if ($exists) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Nama folder sudah ada di lokasi ini',
+            ])->setStatusCode(422);
+        }
+
+        try {
+            // Update nama folder di database
+            $this->folders->update($folderId, [
+                'name' => $newName,
+                'updated_at' => date('Y-m-d H:i:s'),
+            ]);
+
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => 'Nama folder berhasil diubah',
+                'newName' => $newName,
+            ]);
+
+        } catch (\Exception $e) {
+            log_message('error', 'Error rename folder: ' . $e->getMessage());
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ])->setStatusCode(500);
+        }
     }
 }

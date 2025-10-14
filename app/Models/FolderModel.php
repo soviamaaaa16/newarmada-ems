@@ -62,4 +62,13 @@ class FolderModel extends Model
         }
         return $trail;
     }
+
+    public function search($userId, $searchQuery)
+    {
+        return $this
+            ->where('user_id', $userId)
+            ->like('name', $searchQuery, 'both')
+            ->orderBy('name', 'ASC')
+            ->findAll();
+    }
 }

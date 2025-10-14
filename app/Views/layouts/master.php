@@ -44,7 +44,25 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script src="<?= base_url('js/scripts.js') ?>"></script>
-    
+    <?php if (session('success')): ?>
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: "<?php echo session('success')['message']; ?>"
+            });
+        </script>
+    <?php endif; ?>
+
+    <?php if (session('errors')): ?>
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'error',
+                text: "<?php echo session('errors')['message']; ?>"
+            });
+        </script>
+    <?php endif; ?>
     <?= $this->renderSection('js') ?>
 </body>
 
