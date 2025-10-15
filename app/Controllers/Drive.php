@@ -77,8 +77,8 @@ class Drive extends BaseController
             'name' => $name,
             'created_at' => date('Y-m-d H:i:s'),
         ], true);
-
-        return $this->response->setJSON(['id' => $id, 'name' => $name]);
+        return redirect()->back()->withInput()->with('success', ['message' => 'success to create folder.']);
+        // return $this->response->setJSON(['id' => $id, 'name' => $name]);
     }
 
     public function upload()
@@ -133,11 +133,12 @@ class Drive extends BaseController
             'created_by' => (string) (session('username') ?? null),
         ], true);
 
-        return $this->response->setJSON([
-            'id' => $id,
-            'name' => $file->getClientName(),
-            'size' => (int) $file->getSize()
-        ]);
+        // return $this->response->setJSON([
+        //     'id' => $id,
+        //     'name' => $file->getClientName(),
+        //     'size' => (int) $file->getSize()
+        // ]);
+        return redirect()->back()->withInput()->with('success', ['message' => 'success to save data.']);
     }
 
     public function download($id)
@@ -151,7 +152,40 @@ class Drive extends BaseController
             return $this->response->setStatusCode(404);
         return $this->response->download($abs, null)->setFileName($row['name']);
     }
+    public function preview($id)
+    {
+        $file = $this->files->find($id);
 
+        if (!$file) {
+            return $this->response->setStatusCode(404)->setBody('File not found');
+        }
+
+        $filePath = WRITEPATH . $file['file_path'];
+
+        if (!file_exists($filePath)) {
+            return $this->response->setStatusCode(404)->setBody('File not found on server');
+        }
+
+        $ext = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+
+        // Set content type sesuai file extension
+        $mimeTypes = [
+            'pdf' => 'application/pdf',
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'png' => 'image/png',
+            'gif' => 'image/gif',
+            'webp' => 'image/webp',
+        ];
+
+        $contentType = $mimeTypes[$ext] ?? 'application/octet-stream';
+
+        return $this->response
+            ->setHeader('Content-Type', $contentType)
+            ->setHeader('Content-Disposition', 'inline; filename="' . $file['name'] . '"')
+            ->setHeader('Cache-Control', 'public, max-age=3600')
+            ->setBody(file_get_contents($filePath));
+    }
     public function deleteFile($id)
     {
         $userId = $this->uid();

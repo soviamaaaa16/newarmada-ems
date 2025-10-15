@@ -59,4 +59,12 @@ class FileModel extends Model
             ->orderBy('name', 'ASC')
             ->findAll();
     }
+
+    public function search(int $userId, string $query, string $type = 'file')
+    {
+        return $this->where('user_id', $userId)
+            ->like('name', $query)
+            ->orderBy('name', 'ASC')
+            ->findAll();
+    }
 }
