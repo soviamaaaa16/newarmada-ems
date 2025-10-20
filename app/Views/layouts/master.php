@@ -21,6 +21,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="<?= base_url('assets/pdfjs/build/pdf.min.js') ?>"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+
 
     <?= $this->renderSection('css') ?>
 </head>
@@ -28,10 +30,12 @@
 <body class="d-flex flex-column min-vh-100">
 
     <!-- Navbar, header, dll -->
-    <?= $this->include('layouts/navbar') ?>
+
+    <!-- Sidebar -->
+    <?= $this->include('layouts/sidebar') ?>
 
     <!-- Konten halaman -->
-    <main class="flex-fill" style="margin-top: 130px;">
+    <main class="flex-fill">
         <?= $this->renderSection('content') ?>
     </main>
 

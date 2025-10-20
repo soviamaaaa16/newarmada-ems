@@ -24,3 +24,5 @@ $routes->get('drive/download/(:num)', 'DriveController::download/$1');
 $routes->delete('drive/file/(:num)', 'DriveController::deleteFile/$1');
 $routes->delete('drive/folder/(:num)', 'DriveController::deleteFolder/$1');
 
+$routes->get('drive/trash', 'TrashController::index');
+

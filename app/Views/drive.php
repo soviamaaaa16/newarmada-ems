@@ -387,6 +387,7 @@
         position: relative;
     }
 </style>
+
 <div class="container-fluid py-4">
     <!-- Breadcrumbs -->
     <div class="row mb-3">
@@ -421,8 +422,8 @@
     </div>
 
     <!-- Action Buttons -->
-    <div class="row mb-4">
-        <div class="col d-flex justify-content-center gap-2">
+    <div class="row mb-4 position-relative">
+        <div class="col d-flex justify-content-center align-items-center gap-2 position-relative">
 
             <!-- Buat Folder -->
             <button class="btn btn-light border rounded-pill px-3 py-2 shadow-sm hover-elevate" data-bs-toggle="modal"
@@ -440,11 +441,20 @@
                     <i class="bi bi-upload me-2"></i> Upload File
                 </button>
             </form>
+
+            <div class="btn-group position-absolute end-0" role="group" aria-label="View toggle">
+              <button type="button" id="listViewBtn" class="btn btn-outline-secondary">
+                <i class="bi bi-list"></i>
+              </button>
+              <button type="button" id="gridViewBtn" class="btn btn-outline-secondary">
+                <i class="bi bi-grid"></i>
+              </button>
+            </div>
         </div>
     </div>
 
     <!-- Folder & File List -->
-    <div class="row">
+    <div id="gridView" class="row">
         <?php if (empty($folders) && empty($files)): ?>
             <!-- Empty state -->
             <div class="col-12 text-center my-5 empty-state">
@@ -618,6 +628,119 @@
                     </div>
                 </div>
             <?php endforeach; ?>
+        <?php endif; ?>
+    </div>
+
+    <div id="listView" class="d-none">
+        <?php if (empty($folders) && empty($files)): ?>
+            <div class="col-12 text-center my-5 empty-state">
+                <img src="<?= base_url('assets/img/undraw.svg') ?>" alt="Belum ada file atau folder" width="300">
+                <h5 class="mt-3 text-muted">
+                    Klik <b>Buat Folder</b> atau <b>Upload File</b> untuk menambahkan
+                </h5>
+            </div>
+        <?php else: ?>
+            <table class="table align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Nama</th>
+                        <th>Pemilik</th>
+                        <th>Diperbarui</th>
+                        <th>Ukuran</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    <!-- Loop Folder -->
+                    <?php foreach ($folders as $folder): ?>
+                        <tr>
+                            <td>
+                                <a href="<?= base_url('drive/f/' . $folder['id']) ?>" class="text-decoration-none text-dark d-flex align-items-center">
+                                    <i class="bi bi-folder-fill text-warning fs-5 me-2"></i>
+                                    <span class="text-truncate" style="max-width: 250px;"><?= esc($folder['name']) ?></span>
+                                </a>
+                            </td>
+                            <td><?= esc($folder['owner'] ?? 'Saya') ?></td>
+                            <td><?= date('d M Y', strtotime($folder['updated_at'] ?? $folder['created_at'])) ?></td>
+                            <td>–</td>
+                            <td class="text-end">
+                                <div class="dropdown">
+                                    <button class="btn btn-sm border-0 text-secondary" data-bs-toggle="dropdown">
+                                        <i class="bi bi-three-dots-vertical"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li>
+                                            <button class="dropdown-item" onclick="renameHandler.call(this)"
+                                                data-id="<?= $folder['id'] ?>" data-type="folder" data-name="<?= esc($folder['name']) ?>">
+                                                <i class="bi bi-pencil"></i> Rename
+                                            </button>
+                                        </li>
+                                        <li>
+                                            <button type="button" class="dropdown-item btn-delete"
+                                                data-del-folder="<?= esc($folder['id']) ?>">
+                                                <i class="bi bi-trash me-2"></i> Delete
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+
+                    <!-- Loop File -->
+                    <?php foreach ($files as $file): ?>
+                        <?php
+                        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+                        $icon = "bi bi-file-earmark-fill text-primary";
+                        if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) $icon = "bi bi-image text-danger";
+                        if ($ext === 'pdf') $icon = "bi bi-filetype-pdf text-danger";
+                        if (in_array($ext, ['doc', 'docx'])) $icon = "bi bi-filetype-docx text-info";
+                        if (in_array($ext, ['xls', 'xlsx', 'csv'])) $icon = "bi bi-filetype-xlsx text-success";
+                        if (in_array($ext, ['ppt', 'pptx'])) $icon = "bi bi-file-earmark-ppt text-warning";
+                        if (in_array($ext, ['zip', 'rar'])) $icon = "bi bi-file-earmark-zip text-secondary";
+
+                        $fileUrl = base_url('drive/download/' . $file['id']);
+                        ?>
+                        <tr>
+                            <td>
+                                <a href="<?= $fileUrl ?>" class="text-decoration-none text-dark d-flex align-items-center">
+                                    <i class="<?= $icon ?> fs-5 me-2"></i>
+                                    <span class="text-truncate" style="max-width: 250px;"><?= esc($file['name']) ?></span>
+                                </a>
+                            </td>
+                            <td><?= esc($file['owner'] ?? 'Saya') ?></td>
+                            <td><?= date('d M Y', strtotime($file['updated_at'] ?? $file['created_at'])) ?></td>
+                            <td><?= esc($file['size_readable'] ?? '-') ?></td>
+                            <td class="text-end">
+                                <div class="dropdown">
+                                    <button class="btn btn-sm border-0 text-secondary" data-bs-toggle="dropdown">
+                                        <i class="bi bi-three-dots-vertical"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li>
+                                            <a class="dropdown-item" href="<?= base_url('drive/download/' . $file['id']) ?>">
+                                                <i class="bi bi-download me-2"></i> Download
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <button class="dropdown-item" onclick="renameHandler.call(this)"
+                                                data-id="<?= $file['id'] ?>" data-type="file" data-name="<?= esc($file['name']) ?>">
+                                                <i class="bi bi-pencil"></i> Rename
+                                            </button>
+                                        </li>
+                                        <li>
+                                            <button class="dropdown-item btn-delete" data-del-file="<?= $file['id'] ?>">
+                                                <i class="bi bi-trash me-2"></i> Delete
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
         <?php endif; ?>
     </div>
 </div>
@@ -939,14 +1062,44 @@
         }
     }
 
-    // Close on ESC key
+    // UNTUK GRID VIEW DAN LIST VIEW
+    const gridView = document.getElementById('gridView');
+    const listView = document.getElementById('listView');
+    const gridBtn = document.getElementById('gridViewBtn');
+    const listBtn = document.getElementById('listViewBtn');
+
+
+    function showView(viewType) {
+        if (viewType === 'list') {
+          listView.classList.remove('d-none');
+          gridView.classList.add('d-none');
+          listBtn.classList.add('active');
+          gridBtn.classList.remove('active');
+        } else {
+          gridView.classList.remove('d-none');
+          listView.classList.add('d-none');
+          gridBtn.classList.add('active');
+          listBtn.classList.remove('active');
+        }
+        localStorage.setItem('driveView', viewType);
+    }
+
+    gridBtn.addEventListener('click', () => showView('grid'));
+    listBtn.addEventListener('click', () => showView('list'));
+
+    const savedView = localStorage.getItem('driveView');
+    if (savedView === 'list') {
+      showView('list');
+    } else {
+      showView('grid');
+    }
+
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             closePreview();
         }
     });
 
-    // Close on background click
     document.getElementById('previewModal').addEventListener('click', (e) => {
         if (e.target.id === 'previewModal') {
             closePreview();

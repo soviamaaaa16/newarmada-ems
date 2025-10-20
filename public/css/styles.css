@@ -11107,6 +11107,60 @@ button.btn i {
   opacity: 1;
 }
 
+#sidebar {
+  transition: all 0.3s ease;
+}
+
+#sidebar.collapsed {
+  margin-left: -250px;
+}
+
+@media (max-width: 768px) {
+  #sidebar {
+    position: fixed;
+    z-index: 1050;
+    height: 100%;
+  }
+}
+
+.card-body {
+  overflow: hidden;
+}
+
+.card-body a {
+  min-width: 0;
+}
+
+.text-truncate {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#listView .text-truncate {
+  overflow: visible !important;
+  text-overflow: unset !important;
+  white-space: nowrap !important;
+}
+
+#listView table {
+  table-layout: auto;
+}
+
+#listView td:first-child span {
+  white-space: nowrap;
+}
+
+.empty-trash-state {
+  min-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
 
 
 
