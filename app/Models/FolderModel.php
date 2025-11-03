@@ -52,6 +52,15 @@ class FolderModel extends Model
             ->findAll();
     }
 
+    public function listChildrenInTrash(int $userId, ?int $parentId): array
+    {
+        return $this->where('user_id', $userId)
+            ->where('parent_id', $parentId)
+            ->where('deleted_at IS NOT NULL', null, false)
+            ->orderBy('name', 'ASC')
+            ->findAll();
+    }
+
     public function breadcrumb(int $folderId): array
     {
         $trail = [];

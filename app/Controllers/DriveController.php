@@ -239,6 +239,49 @@ class DriveController extends BaseController
         return $this->response->download($abs, null)->setFileName($row['name']);
     }
 
+    public function softdeleteFile($id)
+    {
+        $userId = $this->uid();
+        $row = $this->files->where('user_id', $userId)->find((int) $id);
+        if ($row) {
+            $this->files->update((int) $id, [
+                'deleted_at' => date('Y-m-d H:i:s'),
+            ]);
+        }
+        return $this->response->setJSON(['ok' => true]);
+    }
+
+    public function softdeleteFolder($id)
+    {
+        $userId = $this->uid();
+        $folder = $this->folders->where('user_id', $userId)->find((int) $id);
+        if ($folder) {
+            $now = date('Y-m-d H:i:s');
+            $this->softDeleteFolderRecursive((int) $id, $userId, $now);
+        }
+        return $this->response->setJSON(['ok' => true]);
+    }
+
+    public function softDeleteFolderRecursive(int $folderId, int $userId, string $deletedAt): void
+    {
+        // soft delete folder ini
+        $this->folders->update($folderId, [
+            'deleted_at' => $deletedAt,
+        ]);
+        // soft delete file di folder ini
+        $files = $this->files->where('user_id', $userId)->where('folder_id', $folderId)->findAll();
+        foreach ($files as $f) {
+            $this->files->update((int) $f['id'], [
+                'deleted_at' => $deletedAt,
+            ]);
+        }
+        // telusuri subfolder
+        $subs = $this->folders->where('user_id', $userId)->where('parent_id', $folderId)->findAll();
+        foreach ($subs as $s) {
+            $this->softDeleteFolderRecursive((int) $s['id'], $userId, $deletedAt);
+        }
+    }
+
     public function deleteFile($id)
     {
         $userId = $this->uid();
