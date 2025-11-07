@@ -443,12 +443,12 @@
             </form>
 
             <div class="btn-group position-absolute end-0" role="group" aria-label="View toggle">
-              <button type="button" id="listViewBtn" class="btn btn-outline-secondary">
-                <i class="bi bi-list"></i>
-              </button>
-              <button type="button" id="gridViewBtn" class="btn btn-outline-secondary">
-                <i class="bi bi-grid"></i>
-              </button>
+                <button type="button" id="listViewBtn" class="btn btn-outline-secondary">
+                    <i class="bi bi-list"></i>
+                </button>
+                <button type="button" id="gridViewBtn" class="btn btn-outline-secondary">
+                    <i class="bi bi-grid"></i>
+                </button>
             </div>
         </div>
     </div>
@@ -465,7 +465,7 @@
             </div>
         <?php else: ?>
             <!-- Loop Folder -->
-            <div class="row" id="container-search">
+            <div class="row" id="container-search"> 
                 <?php foreach ($folders as $folder): ?>
                     <div class="col-md-2 col-sm-6 mb-4">
                         <div class="card file-card shadow-sm border-0 h-100">
@@ -656,7 +656,8 @@
                     <?php foreach ($folders as $folder): ?>
                         <tr>
                             <td>
-                                <a href="<?= base_url('drive/f/' . $folder['id']) ?>" class="text-decoration-none text-dark d-flex align-items-center">
+                                <a href="<?= base_url('drive/f/' . $folder['id']) ?>"
+                                    class="text-decoration-none text-dark d-flex align-items-center">
                                     <i class="bi bi-folder-fill text-warning fs-5 me-2"></i>
                                     <span class="text-truncate" style="max-width: 250px;"><?= esc($folder['name']) ?></span>
                                 </a>
@@ -672,7 +673,8 @@
                                     <ul class="dropdown-menu dropdown-menu-end">
                                         <li>
                                             <button class="dropdown-item" onclick="renameHandler.call(this)"
-                                                data-id="<?= $folder['id'] ?>" data-type="folder" data-name="<?= esc($folder['name']) ?>">
+                                                data-id="<?= $folder['id'] ?>" data-type="folder"
+                                                data-name="<?= esc($folder['name']) ?>">
                                                 <i class="bi bi-pencil"></i> Rename
                                             </button>
                                         </li>
@@ -687,31 +689,54 @@
                             </td>
                         </tr>
                     <?php endforeach; ?>
+                    <?php
+                    // Function to format the file size
+                    function formatSize($size)
+                    {
+                        if ($size >= 1073741824) {
+                            return number_format($size / 1073741824, 2) . ' GB';
+                        } elseif ($size >= 1048576) {
+                            return number_format($size / 1048576, 2) . ' MB';
+                        } elseif ($size >= 1024) {
+                            return number_format($size / 1024, 2) . ' KB';
+                        } else {
+                            return $size . ' B';
+                        }
+                    }
 
+                    // Assuming $file['size'] contains the size in bytes
+                    ?>
                     <!-- Loop File -->
                     <?php foreach ($files as $file): ?>
                         <?php
                         $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
                         $icon = "bi bi-file-earmark-fill text-primary";
-                        if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) $icon = "bi bi-image text-danger";
-                        if ($ext === 'pdf') $icon = "bi bi-filetype-pdf text-danger";
-                        if (in_array($ext, ['doc', 'docx'])) $icon = "bi bi-filetype-docx text-info";
-                        if (in_array($ext, ['xls', 'xlsx', 'csv'])) $icon = "bi bi-filetype-xlsx text-success";
-                        if (in_array($ext, ['ppt', 'pptx'])) $icon = "bi bi-file-earmark-ppt text-warning";
-                        if (in_array($ext, ['zip', 'rar'])) $icon = "bi bi-file-earmark-zip text-secondary";
+                        if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp']))
+                            $icon = "bi bi-image text-danger";
+                        if ($ext === 'pdf')
+                            $icon = "bi bi-filetype-pdf text-danger";
+                        if (in_array($ext, ['doc', 'docx']))
+                            $icon = "bi bi-filetype-docx text-info";
+                        if (in_array($ext, ['xls', 'xlsx', 'csv']))
+                            $icon = "bi bi-filetype-xlsx text-success";
+                        if (in_array($ext, ['ppt', 'pptx']))
+                            $icon = "bi bi-file-earmark-ppt text-warning";
+                        if (in_array($ext, ['zip', 'rar']))
+                            $icon = "bi bi-file-earmark-zip text-secondary";
 
                         $fileUrl = base_url('drive/download/' . $file['id']);
                         ?>
                         <tr>
                             <td>
-                                <a href="<?= $fileUrl ?>" class="text-decoration-none text-dark d-flex align-items-center">
+                                <a href="#" onclick="previewFile('<?= $fileUrl ?>','<?= esc($file['name']) ?>')"
+                                    class="text-decoration-none text-dark d-flex align-items-center">
                                     <i class="<?= $icon ?> fs-5 me-2"></i>
                                     <span class="text-truncate" style="max-width: 250px;"><?= esc($file['name']) ?></span>
                                 </a>
                             </td>
                             <td><?= esc($file['owner'] ?? 'Saya') ?></td>
                             <td><?= date('d M Y', strtotime($file['updated_at'] ?? $file['created_at'])) ?></td>
-                            <td><?= esc($file['size_readable'] ?? '-') ?></td>
+                            <td><?= formatSize($file['size']) ?? '-' ?></td>
                             <td class="text-end">
                                 <div class="dropdown">
                                     <button class="btn btn-sm border-0 text-secondary" data-bs-toggle="dropdown">
@@ -725,7 +750,8 @@
                                         </li>
                                         <li>
                                             <button class="dropdown-item" onclick="renameHandler.call(this)"
-                                                data-id="<?= $file['id'] ?>" data-type="file" data-name="<?= esc($file['name']) ?>">
+                                                data-id="<?= $file['id'] ?>" data-type="file"
+                                                data-name="<?= esc($file['name']) ?>">
                                                 <i class="bi bi-pencil"></i> Rename
                                             </button>
                                         </li>
@@ -1071,15 +1097,15 @@
 
     function showView(viewType) {
         if (viewType === 'list') {
-          listView.classList.remove('d-none');
-          gridView.classList.add('d-none');
-          listBtn.classList.add('active');
-          gridBtn.classList.remove('active');
+            listView.classList.remove('d-none');
+            gridView.classList.add('d-none');
+            listBtn.classList.add('active');
+            gridBtn.classList.remove('active');
         } else {
-          gridView.classList.remove('d-none');
-          listView.classList.add('d-none');
-          gridBtn.classList.add('active');
-          listBtn.classList.remove('active');
+            gridView.classList.remove('d-none');
+            listView.classList.add('d-none');
+            gridBtn.classList.add('active');
+            listBtn.classList.remove('active');
         }
         localStorage.setItem('driveView', viewType);
     }
@@ -1089,9 +1115,9 @@
 
     const savedView = localStorage.getItem('driveView');
     if (savedView === 'list') {
-      showView('list');
+        showView('list');
     } else {
-      showView('grid');
+        showView('grid');
     }
 
     document.addEventListener('keydown', (e) => {
@@ -1558,8 +1584,8 @@
         if (!confirm('Hapus file ini?')) return;
         const id = this.getAttribute('data-del-file');
         try {
-            const res = await fetch(`<?= base_url('drive/file/') ?>${id}`, {
-                method: 'DELETE'
+            const res = await fetch(`<?= base_url('drive/moveToTrash/') ?>${id}`, {
+                method: 'post'
             });
             if (res.ok) {
                 location.reload();

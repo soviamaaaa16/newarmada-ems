@@ -21,6 +21,7 @@ class FileModel extends Model
         'size',
         'created_at',
         'created_by',
+        'deleted_at',
     ];
     protected bool $allowEmptyInserts = false;
     protected bool $updateOnlyChanged = true;
@@ -56,7 +57,17 @@ class FileModel extends Model
     {
         return $this->where('user_id', $userId)
             ->where('folder_id', $folderId)
+            ->where('deleted_at', null)
             ->orderBy('name', 'ASC')
+            ->findAll();
+    }
+
+    public function listInTrash(int $userId, ?int $folderId): array
+    {
+        return $this->where('user_id', $userId)
+            // ->where('folder_id', $folderId)
+            ->where('deleted_at IS NOT NULL')
+            ->orderBy('deleted_at', 'DESC')
             ->findAll();
     }
 
@@ -64,6 +75,7 @@ class FileModel extends Model
     {
         return $this->where('user_id', $userId)
             ->like('name', $query)
+            ->where('deleted_at', null)
             ->orderBy('name', 'ASC')
             ->findAll();
     }

@@ -23,6 +23,7 @@ $routes->get('drive/preview/(:num)', 'DriveController::preview/$1');
 $routes->get('drive/download/(:num)', 'DriveController::download/$1');
 $routes->delete('drive/file/(:num)', 'DriveController::deleteFile/$1');
 $routes->delete('drive/folder/(:num)', 'DriveController::deleteFolder/$1');
-
+$routes->post('drive/moveToTrash/(:num)', 'DriveController::softdeleteFile/$1');
+$routes->post('drive/restoreFromTrash/(:num)', 'DriveController::restoreFromTrash/$1');
 $routes->get('drive/trash', 'TrashController::index');
 
