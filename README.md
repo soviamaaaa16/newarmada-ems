@@ -1,68 +1,126 @@
-# CodeIgniter 4 Application Starter
 
-## What is CodeIgniter?
+# New Armada Enterprise Management System (EMS)
 
-CodeIgniter is a PHP full-stack web framework that is light, fast, flexible and secure.
-More information can be found at the [official site](https://codeigniter.com).
+New Armada Enterprise Management System (EMS) adalah platform berbasis web yang dibangun menggunakan PHP CodeIgniter 4 (CI4) dan MySQL untuk membantu manajemen bisnis dalam mengelola berbagai fungsi operasional secara efisien. Sistem ini dirancang untuk menangani proses manajemen file, inventory, keuangan, dan analisis data perusahaan.
 
-This repository holds a composer-installable app starter.
-It has been built from the
-[development repository](https://github.com/codeigniter4/CodeIgniter4).
+## Fitur Utama
 
-More information about the plans for version 4 can be found in [CodeIgniter 4](https://forum.codeigniter.com/forumdisplay.php?fid=28) on the forums.
+1. **Manajemen Pengguna (User Management)**
+   - Sistem memungkinkan pengelolaan pengguna dengan hak akses yang terkontrol.
+   - Role-based access control (RBAC) untuk menentukan hak akses pengguna sesuai dengan peran mereka.
 
-You can read the [user guide](https://codeigniter.com/user_guide/)
-corresponding to the latest version of the framework.
+2. **Manajemen File**
+   - Mengunggah, menyimpan, dan berbagi file secara online.
+   - Sistem memiliki struktur folder untuk pengelolaan file yang lebih rapi.
 
-## Installation & updates
+3. **Manajemen Keuangan**
+   - Modul untuk mencatat transaksi keuangan, pembuatan laporan laba/rugi, dan neraca.
+   - Fitur pelaporan keuangan yang dapat diakses sesuai kebutuhan.
 
-`composer create-project codeigniter4/appstarter` then `composer update` whenever
-there is a new release of the framework.
+4. **Manajemen Inventaris**
+   - Pemantauan stok barang, pengaturan level persediaan, dan pembaruan inventaris otomatis.
+   - Pencatatan pemasukan dan pengeluaran barang.
 
-When updating, check the release notes to see if there are any changes you might need to apply
-to your `app` folder. The affected files can be copied or merged from
-`vendor/codeigniter4/framework/app`.
+5. **Analisis Data**
+   - Pengguna dapat melakukan analisis data untuk mengambil keputusan berbasis data dengan menggunakan laporan yang tersedia.
 
-## Setup
+6. **Pencarian dan Filter Data**
+   - Fitur pencarian untuk menemukan data secara cepat dengan menggunakan filter yang disesuaikan.
 
-Copy `env` to `.env` and tailor for your app, specifically the baseURL
-and any database settings.
+7. **Keamanan dan Autentikasi**
+   - Sistem keamanan menggunakan enkripsi untuk menjaga data tetap aman.
+   - Login dan autentikasi berbasis session dengan fitur logout otomatis.
 
-## Important Change with index.php
+## Teknologi yang Digunakan
 
-`index.php` is no longer in the root of the project! It has been moved inside the *public* folder,
-for better security and separation of components.
+- **Backend**: PHP (CodeIgniter 4)
+- **Database**: MySQL
+- **Frontend**: HTML, CSS, JavaScript (jQuery, Bootstrap)
+- **Keamanan**: CSRF Protection, Enkripsi Password dengan `bcrypt`
+- **Autentikasi**: Session Management, Role-Based Access Control (RBAC)
+- **File Storage**: Sistem penyimpanan file berbasis folder di server.
 
-This means that you should configure your web server to "point" to your project's *public* folder, and
-not to the project root. A better practice would be to configure a virtual host to point there. A poor practice would be to point your web server to the project root and expect to enter *public/...*, as the rest of your logic and the
-framework are exposed.
+## Instalasi
 
-**Please** read the user guide for a better explanation of how CI4 works!
+### Persyaratan Sistem
+- PHP 7.4 atau lebih tinggi
+- MySQL 5.7 atau lebih tinggi
+- Composer untuk manajemen dependensi PHP
+- Server Web (Apache/Nginx)
 
-## Repository Management
+### Langkah-langkah Instalasi
 
-We use GitHub issues, in our main repository, to track **BUGS** and to track approved **DEVELOPMENT** work packages.
-We use our [forum](http://forum.codeigniter.com) to provide SUPPORT and to discuss
-FEATURE REQUESTS.
+1. **Clone Repositori**
 
-This repository is a "distribution" one, built by our release preparation script.
-Problems with it can be raised on our forum, or as issues in the main repository.
+   ```
+   git clone https://github.com/username/new-armada-ems.git
+   ```
 
-## Server Requirements
+2. **Instalasi Dependensi**
 
-PHP version 8.1 or higher is required, with the following extensions installed:
+   Setelah meng-clone repositori, jalankan Composer untuk menginstal dependensi yang dibutuhkan:
 
-- [intl](http://php.net/manual/en/intl.requirements.php)
-- [mbstring](http://php.net/manual/en/mbstring.installation.php)
+   ```
+   cd new-armada-ems
+   composer install
+   ```
 
-> [!WARNING]
-> - The end of life date for PHP 7.4 was November 28, 2022.
-> - The end of life date for PHP 8.0 was November 26, 2023.
-> - If you are still using PHP 7.4 or 8.0, you should upgrade immediately.
-> - The end of life date for PHP 8.1 will be December 31, 2025.
+3. **Konfigurasi Database**
 
-Additionally, make sure that the following extensions are enabled in your PHP:
+   Sesuaikan pengaturan koneksi database di file `.env` dengan informasi MySQL Anda:
 
-- json (enabled by default - don't turn it off)
-- [mysqlnd](http://php.net/manual/en/mysqlnd.install.php) if you plan to use MySQL
-- [libcurl](http://php.net/manual/en/curl.requirements.php) if you plan to use the HTTP\CURLRequest library
+   ```
+   database.default.hostname = localhost
+   database.default.database = ems_db
+   database.default.username = root
+   database.default.password = password
+   ```
+
+4. **Jalankan Migrations**
+
+   Jalankan migrations untuk menyiapkan database:
+
+   ```
+   php spark migrate
+   ```
+
+5. **Menjalankan Aplikasi**
+
+   Jalankan aplikasi menggunakan built-in server PHP:
+
+   ```
+   php spark serve
+   ```
+
+   Aplikasi dapat diakses di `http://localhost:8080`.
+
+## Penggunaan
+
+1. **Mendaftar dan Login**
+   - Pengguna baru dapat mendaftar menggunakan email dan password.
+   - Pengguna yang sudah terdaftar dapat langsung login.
+
+2. **Manajemen Pengguna**
+   - Admin dapat menambahkan, mengedit, atau menghapus pengguna.
+   - Mengatur peran pengguna dengan hak akses tertentu.
+
+3. **Mengelola File dan Dokumen**
+   - Pengguna dapat mengunggah, mengatur, dan berbagi file melalui sistem.
+   - Pengguna dapat mengakses file sesuai dengan izin yang diberikan.
+
+4. **Melakukan Transaksi Keuangan**
+   - Sistem memungkinkan pencatatan transaksi keuangan harian, bulanan, atau tahunan.
+
+5. **Melakukan Analisis Data**
+   - Laporan yang dihasilkan dapat digunakan untuk analisis lebih lanjut mengenai performa perusahaan.
+
+## Kontribusi
+
+Jika Anda ingin berkontribusi pada proyek ini, Anda dapat:
+1. Fork repositori ini.
+2. Buat branch baru untuk fitur atau perbaikan yang Anda kerjakan.
+3. Lakukan perubahan dan buat pull request.
+
+## Lisensi
+
+Proyek ini dilisensikan di bawah [MIT License](LICENSE).
