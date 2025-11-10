@@ -465,7 +465,7 @@
             </div>
         <?php else: ?>
             <!-- Loop Folder -->
-            <div class="row" id="container-search"> 
+            <div class="row" id="container-search">
                 <?php foreach ($folders as $folder): ?>
                     <div class="col-md-2 col-sm-6 mb-4">
                         <div class="card file-card shadow-sm border-0 h-100">
@@ -1605,8 +1605,8 @@
         if (!confirm('Hapus folder ini?')) return;
         const id = this.getAttribute('data-del-folder');
         try {
-            const res = await fetch(`<?= base_url('drive/folder/') ?>${id}`, {
-                method: 'DELETE'
+            const res = await fetch(`<?= base_url('drive/moveToTrashFolder/') ?>${id}`, {
+                method: 'post'
             });
             if (res.ok) {
                 location.reload();

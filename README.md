@@ -36,7 +36,7 @@ New Armada Enterprise Management System (EMS) adalah platform berbasis web yang 
 - **Backend**: PHP (CodeIgniter 4)
 - **Database**: MySQL
 - **Frontend**: HTML, CSS, JavaScript (jQuery, Bootstrap)
-- **Keamanan**: CSRF Protection, Enkripsi Password dengan `bcrypt`
+- **Keamanan**: CSRF Protection, Enkripsi Password dengan `password-hash`
 - **Autentikasi**: Session Management, Role-Based Access Control (RBAC)
 - **File Storage**: Sistem penyimpanan file berbasis folder di server.
 

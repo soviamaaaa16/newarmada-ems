@@ -282,6 +282,47 @@ class DriveController extends BaseController
         }
     }
 
+    public function restoreFile($id)
+    {
+        $userId = $this->uid();
+        $row = $this->files->where('user_id', $userId)->find((int) $id);
+        if ($row) {
+            $this->files->update((int) $id, [
+                'deleted_at' => null,
+            ]);
+        }
+        return $this->response->setJSON(['ok' => true]);
+    }
+    public function restoreFolder($id)
+    {
+        $userId = $this->uid();
+        $folder = $this->folders->where('user_id', $userId)->find((int) $id);
+        if ($folder) {
+            $this->restoreFolderRecursive((int) $id, $userId);
+        }
+        return $this->response->setJSON(['ok' => true]);
+    }
+
+    public function restoreFolderRecursive(int $folderId, int $userId): void
+    {
+        // restore folder ini
+        $this->folders->update($folderId, [
+            'deleted_at' => null,
+        ]);
+        // restore file di folder ini
+        $files = $this->files->where('user_id', $userId)->where('folder_id', $folderId)->findAll();
+        foreach ($files as $f) {
+            $this->files->update((int) $f['id'], [
+                'deleted_at' => null,
+            ]);
+        }
+        // telusuri subfolder
+        $subs = $this->folders->where('user_id', $userId)->where('parent_id', $folderId)->findAll();
+        foreach ($subs as $s) {
+            $this->restoreFolderRecursive((int) $s['id'], $userId);
+        }
+    }
+
     public function deleteFile($id)
     {
         $userId = $this->uid();

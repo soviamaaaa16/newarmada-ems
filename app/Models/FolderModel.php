@@ -12,7 +12,7 @@ class FolderModel extends Model
     protected $returnType = 'array';
     protected $useSoftDeletes = false;
     protected $protectFields = true;
-    protected $allowedFields = ['user_id', 'parent_id', 'name', 'created_at'];
+    protected $allowedFields = ['user_id', 'parent_id', 'name', 'created_at', 'deleted_at'];
 
     protected bool $allowEmptyInserts = false;
     protected bool $updateOnlyChanged = true;
@@ -48,6 +48,7 @@ class FolderModel extends Model
     {
         return $this->where('user_id', $userId)
             ->where('parent_id', $parentId)
+            ->where('deleted_at IS NULL', null, false)
             ->orderBy('name', 'ASC')
             ->findAll();
     }
