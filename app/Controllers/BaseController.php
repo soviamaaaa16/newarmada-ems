@@ -55,4 +55,105 @@ abstract class BaseController extends Controller
 
         // E.g.: $this->session = service('session');
     }
+
+    /**
+     * Get current user ID from Shield authentication
+     * Fallback ke session jika belum login (untuk development)
+     * 
+     * @return int User ID
+     */
+    protected function uid(): int
+    {
+        // Cek apakah user sudah login via Shield
+        if (auth()->loggedIn()) {
+            $user = auth()->user();
+            // Simpan ke session juga untuk kompatibilitas
+            session()->set('user_id', $user->id);
+            return (int) $user->id;
+        }
+
+        // Fallback: cek session (untuk backward compatibility)
+        $sessionUserId = session('user_id');
+        if ($sessionUserId) {
+            return (int) $sessionUserId;
+        }
+
+        // Development mode: set default user_id = 1
+        // HAPUS INI di production!
+        // if (ENVIRONMENT === 'development') {
+        //     session()->set('user_id', 1);
+        //     return 1;
+        // }
+
+        // Production: redirect ke login jika tidak ada user
+        return redirect()->to('/login')->send();
+    }
+
+    /**
+     * Alternative: Strict version - paksa login
+     * Uncomment method ini jika mau paksa user harus login
+     */
+    /*
+    protected function uid(): int
+    {
+        if (!auth()->loggedIn()) {
+            redirect()->to('/login')->send();
+            exit;
+        }
+
+        $user = auth()->user();
+        return (int) $user->id;
+    }
+    */
+
+    /**
+     * Helper method untuk cek apakah user sudah login
+     * 
+     * @return bool
+     */
+    protected function isLoggedIn(): bool
+    {
+        return auth()->loggedIn();
+    }
+
+    /**
+     * Helper method untuk ambil data user lengkap
+     * 
+     * @return object|null
+     */
+    protected function getCurrentUser()
+    {
+        if (auth()->loggedIn()) {
+            return auth()->user();
+        }
+        return null;
+    }
+
+    /**
+     * Helper method untuk cek user group/role
+     * 
+     * @param string $group
+     * @return bool
+     */
+    protected function inGroup(string $group): bool
+    {
+        if (!auth()->loggedIn()) {
+            return false;
+        }
+        return auth()->user()->inGroup($group);
+    }
+
+    /**
+     * Helper method untuk cek permission
+     * 
+     * @param string $permission
+     * @return bool
+     */
+    protected function hasPermission(string $permission): bool
+    {
+        if (!auth()->loggedIn()) {
+            return false;
+        }
+        return auth()->user()->can($permission);
+    }
 }

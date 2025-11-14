@@ -17,11 +17,11 @@ class TrashController extends BaseController
         $this->folders = new FolderModel();
         $this->files = new FileModel();
     }
-    private function uid(): int
-    {
-        session()->set('user_id', 1);
-        return (int) (session('user_id') ?? 1);
-    }
+    // private function uid(): int
+    // {
+    //     session()->set('user_id', 1);
+    //     return (int) (session('user_id') ?? 1);
+    // }
     public function index(?int $folderId = null)
     {
         $userId = $this->uid();

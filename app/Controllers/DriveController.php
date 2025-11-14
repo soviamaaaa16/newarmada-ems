@@ -19,17 +19,10 @@ class DriveController extends BaseController
         $this->files = new FileModel();
     }
 
-    private function uid(): int
-    {
-        session()->set('user_id', 1);
-        return (int) (session('user_id') ?? 1);
-    }
-
     /** Halaman utama: root = parent_id NULL */
     public function index(?int $folderId = null)
     {
         $userId = $this->uid();
-        // Jika folderId diberikan, pastikan milik user
         $currentFolder = null;
         if ($folderId !== null) {
             $currentFolder = $this->folders->where('user_id', $userId)->find($folderId);
