@@ -17,16 +17,20 @@
       </p>
     </div>
   <?php else: ?>
-
     <div id="row" class="row g-3">
       <?php foreach ($folders as $folder): ?>
         <div class="col-md-2 col-sm-6 mb-4">
           <div class="card file-card border-0 shadow-sm h-100">
             <div class="card-body d-flex align-items-center justify-content-between">
-              <div class="d-flex align-items-center flex-grow-1 min-w-0">
-                <i class="bi bi-folder-fill text-warning fs-4 me-2"></i>
-                <span class="text-truncate"><?= esc($folder['name']) ?></span>
-              </div>
+              <!-- Folder Link -->
+              <a href="<?= base_url('drive/f/' . $folder['id']) ?>"
+                  class="text-decoration-none text-dark d-flex align-items-center flex-grow-1 min-w-0">
+                  <i class="bi bi-folder-fill text-warning" style="font-size: 25px;"></i>
+                  <span class="ms-3 text-truncate" title="<?= esc($folder['name']) ?>">
+                      <?= esc($folder['name']) ?>
+                  </span>
+              </a>
+
               <div class="dropdown ms-2">
                 <button class="btn btn-sm border-0 text-secondary" data-bs-toggle="dropdown" aria-expanded="false">
                   <i class="bi bi-three-dots-vertical"></i>
@@ -52,7 +56,9 @@
           </div>
         </div>
       <?php endforeach; ?>
-
+    </div>
+      
+    <div class="row" class="files">
       <?php foreach ($files as $file): ?>
         <?php
         $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
@@ -190,5 +196,18 @@
         alert('Terjadi kesalahan jaringan.');
       });
   }
+
+  document.querySelectorAll('.dropdown').forEach(drop => {
+    drop.addEventListener('show.bs.dropdown', function () {
+      document.querySelectorAll('.file-card').forEach(c => c.classList.remove('show-dropdown'));
+      this.closest('.file-card')?.classList.add('show-dropdown');
+    });
+    
+    drop.addEventListener('hide.bs.dropdown', function () {
+      this.closest('.file-card')?.classList.remove('show-dropdown');
+    });
+  });
+
+
 </script>
 <?= $this->endSection() ?>

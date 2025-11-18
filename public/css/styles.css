@@ -11161,6 +11161,33 @@ button.btn i {
   justify-content: center;
 }
 
+.file-card,
+.file-card .card-body {
+  overflow: visible !important;
+}
+
+.dropdown .ms-2 {
+  overflow: visible !important; 
+}
+
+.file-card {
+  position: relative;
+  overflow: visible !important;
+  z-index: 1;
+}
+
+.file-card.show-dropdown {
+  z-index: 999 !important;
+}
+
+.dropdown-menu {
+  position: absolute !important;
+  z-index: 9999 !important;
+}
+
+
+
+
 
 
 

@@ -413,7 +413,6 @@
         </div>
     </div>
 
-    <!-- Search Bar (opsional, implementasi backend menyusul) -->
     <div class="row justify-content-center mb-3">
         <div class="col-md-8">
             <input id="searchInput" class="form-control form-control-lg me-2 rounded-pill px-4 shadow-sm" type="search"
@@ -789,7 +788,7 @@
     </div>
 
     <div class="preview-content" id="previewContent">
-        <!-- Preview content akan dimasukkan di sini -->
+        <!-- Preview content akan dimasukkan di sini -->3
     </div>
 
     <div class="preview-footer" id="previewFooter" style="display: none;">
