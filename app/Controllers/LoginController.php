@@ -14,12 +14,12 @@ class LoginController extends BaseController
     {
         if (auth()->loggedIn()) {
             if (auth()->user()->inGroup('admin')) {
-                return redirect()->to('/admin');
+                return redirect()->to('/admin/users');
             } elseif (auth()->user()->inGroup('user')) {
                 return redirect()->to('/drive');
+            } else {
+                return redirect()->to('/drive');
             }
-
-            return redirect()->to('/drive');
         }
         return view('auth/login');
     }
@@ -51,6 +51,7 @@ class LoginController extends BaseController
 
         // Attempt login
         $result = auth()->attempt($credentials, $remember);
+        // $user = $resultgetUser()
 
         if (!$result->isOK()) {
             return redirect()->back()
@@ -58,16 +59,21 @@ class LoginController extends BaseController
                 ->with('error', $result->reason());
         }
 
+        if (!auth()->user()->isActivated()) {
+            auth()->logout();
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Akun Anda belum diaktifkan. Silakan contact IT HRD untuk aktivasi.');
+        }
         // Login berhasil
         if (auth()->user()->inGroup('superadmin')) {
-            return redirect()->to('/admin')->with('message', 'Login berhasil!');
+            return redirect()->to('/admin/users')->with('message', 'Login berhasil!');
 
         } elseif (auth()->user()->inGroup('admin')) {
             return redirect()->to('/admin/users')->with('message', 'Login berhasil!');
 
         } elseif (auth()->user()->inGroup('user')) {
             return redirect()->to('/drive')->with('message', 'Login berhasil!');
-
         }
     }
 

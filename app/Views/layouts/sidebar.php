@@ -17,6 +17,15 @@
             <i class="bi bi-trash me-2"></i> Sampah
           </a>
         </li>
+        <?php if (auth()->loggedIn()) {
+          if (auth()->user()->inGroup('admin')) { ?>
+            <li class="nav-item mb-2">
+              <a href="<?= base_url('admin/users') ?>" class="nav-link text-dark">
+                <i class="bi bi-person me-2"></i> Manage Users
+              </a>
+            </li>
+          <?php }
+        } ?>
         <li class="nav-item mt-4 border-top pt-3">
           <a href="<?= base_url('guide') ?>" class="nav-link text-dark">
             <i class="bi bi-book me-2"></i> Panduan Pengguna

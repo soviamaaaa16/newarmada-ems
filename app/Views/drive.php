@@ -433,8 +433,9 @@
             <!-- Upload File -->
             <form action="<?= base_url('drive/upload') ?>" method="post" enctype="multipart/form-data">
                 <input type="hidden" name="folder_id" value="<?= esc($currentFolder['id'] ?? '') ?>">
-                <input type="file" name="file" id="uploadFile" accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.xls,.xlsx,.csv"
-                    hidden onchange="this.form.submit()">
+                <input type="file" name="file" id="uploadFile"
+                    accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.xls,.xlsx,.csv,.docx,.doc,.ppt,.pptx,.zip,.rar" hidden
+                    onchange="this.form.submit()">
                 <button type="button" class="btn btn-light border rounded-pill px-3 py-2 shadow-sm hover-elevate"
                     onclick="document.getElementById('uploadFile').click()">
                     <i class="bi bi-upload me-2"></i> Upload File
@@ -529,25 +530,6 @@
                 $fileUrl = base_url('drive/download/' . $file['id']);
                 $previewUrl = base_url('drive/preview/' . $file['id']);
                 ?>
-
-                <!-- <div class="col-md-2 col-6 text-center mb-4">
-                    <i class="<?= $icon ?>" style="font-size:40px;"></i>
-                    <p class="mt-2 small text-truncate" title="<?= esc($file['name']) ?>">
-                        <?= esc($file['name']) ?>
-                    </p>
-                    <div class="d-flex justify-content-center gap-2">
-                        <a class="btn btn-sm btn-outline-secondary" href="<?= base_url('drive/download/' . $file['id']) ?>">
-                            <i class="bi bi-download"></i>
-                        </a>
-                        <!-- (Opsional) tombol hapus file via JS fetch DELETE -->
-                <!--
-                        <button class="btn btn-sm btn-outline-danger" data-del-file="<?= $file['id'] ?>">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                        -->
-                <!-- </div>
-                </div>  -->
-
                 <div class="col-md-2 col-sm-4 col-6 mb-4">
                     <div class="card file-card border-0 shadow-sm h-100" data-preview-url="<?= $fileUrl ?>"
                         data-filename="<?= esc($file['name']) ?>">
@@ -583,13 +565,6 @@
                                 <i class="<?= $icon ?>" style="font-size:48px;"></i>
                             <?php endif; ?>
                         </div>
-
-                        <!-- <div class="card-body p-2 text-center">
-                            <p class="small mb-1 d-flex align-items-center justify-content gap-1">
-                                <i class="<?= $icon ?>" style="font-size: 1rem;"></i>
-                                <span class="text-truncate d-inline-block ms-1" style="max-width: 80%;"><?= esc($file['name']) ?></span>
-                            </p>
-                        </div> -->
 
                         <div class="d-flex align-items-center justify-content-between px-2">
                             <div class="d-flex align-items-center flex-grow-1 overflow-hidden">

@@ -4,6 +4,8 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use CodeIgniter\HTTP\ResponseInterface;
+use CodeIgniter\Shield\Models\UserModel;
+use CodeIgniter\Shield\Entities\User;
 
 class RegisterController extends BaseController
 {
@@ -58,7 +60,7 @@ class RegisterController extends BaseController
         // Auto login setelah register
         auth()->login($newUser);
 
-        return redirect()->to('/dashboard')
+        return redirect()->to('/drive')
             ->with('message', 'Registrasi berhasil! Selamat datang.');
     }
 }

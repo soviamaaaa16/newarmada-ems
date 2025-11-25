@@ -147,7 +147,7 @@ class UsersController extends BaseController
 
         $rules = [
             'username' => "required|alpha_numeric_space|min_length[3]|max_length[30]|is_unique[users.username,id,{$id}]",
-            'email' => "required|valid_email",
+            // 'email' => "required",
         ];
 
         if ($this->request->getPost('password')) {
@@ -174,7 +174,6 @@ class UsersController extends BaseController
             // Delete old group
             $this->db->table('auth_groups_users')->where('user_id', $id)->delete();
 
-            // Insert new group
             $this->db->table('auth_groups_users')->insert([
                 'user_id' => $id,
                 'group' => $this->request->getPost('group'),
