@@ -88,6 +88,7 @@ $routes->group('/', ['filter' => 'session'], function ($routes) {
     $routes->get('drive/trash', 'TrashController::index');                // lihat trash
     $routes->post('trash/restoreFile/(:num)', 'DriveController::restoreFile/$1');
     $routes->post('trash/restoreFolder/(:num)', 'DriveController::restoreFolder/$1');
+    $routes->get('drive/getFolderTree', 'DriveController::getFolderTree');
 });
 
 

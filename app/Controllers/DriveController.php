@@ -510,4 +510,43 @@ class DriveController extends BaseController
             ])->setStatusCode(500);
         }
     }
+
+    // public function getFolderTree($parentId = null)
+    // {
+    //     helper('filesystem');
+
+    //     $folders = $this->folders
+    //         ->where('parent_id', $parentId)
+    //         ->orderBy('name', 'ASC')
+    //         ->findAll();
+
+    //     foreach ($folders as &$f) {
+    //         $f['children'] = $this->folders
+    //             ->where('parent_id', $f['id'])
+    //             ->orderBy('name', 'ASC')
+    //             ->findAll();
+    //     }
+
+    //     return $this->response->setJSON($folders);
+    // }
+
+    private function buildTree($parentId = null)
+    {
+        $folders = $this->folders
+            ->where('parent_id', $parentId)
+            ->orderBy('name', 'ASC')
+            ->findAll();
+
+        foreach ($folders as &$f) {
+            $f['children'] = $this->buildTree($f['id']); // RECURSIVE HERE
+        }
+
+        return $folders;
+    }
+
+    public function getFolderTree()
+    {
+        $tree = $this->buildTree(null);
+        return $this->response->setJSON($tree);
+    }
 }

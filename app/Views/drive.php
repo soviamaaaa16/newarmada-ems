@@ -1593,5 +1593,5 @@
         }
     }
 
-</script>
+</script>   
 <?= $this->endSection() ?>

@@ -336,12 +336,7 @@
             <div class="text-center">
                 <p>Belum punya akun? <a href="<?= base_url('register') ?>">Daftar disini</a></p>
             </div>
-        </div>
-        
-        
-        
-        
-        
+        </div>     
         
         <!-- <h2>Login</h2>
         <?php if (session('error')): ?>
