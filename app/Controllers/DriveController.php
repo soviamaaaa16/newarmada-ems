@@ -25,7 +25,8 @@ class DriveController extends BaseController
         $userId = $this->uid();
         $currentFolder = null;
         if ($folderId !== null) {
-            $currentFolder = $this->folders->where('user_id', $userId)->find($folderId);
+            // $currentFolder = $this->folders->find($folderId);
+            $currentFolder = $this->folders->find($folderId);
             if (!$currentFolder) {
                 throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Folder tidak ditemukan');
             }
@@ -38,8 +39,8 @@ class DriveController extends BaseController
         $data = [
             'currentFolder' => $currentFolder,
             'breadcrumbs' => $folderId ? $this->folders->breadcrumb($folderId) : [],
-            'folders' => $this->folders->listChildren($userId, $parentId),
-            'files' => $this->files->listInFolder($userId, $parentId),
+            'folders' => $this->folders->listChildren($parentId),
+            'files' => $this->files->listInFolder($parentId),
             'searchQuery' => null,
             'isSearch' => false,
         ];
@@ -134,7 +135,7 @@ class DriveController extends BaseController
             $folderId = $this->ensureRootFolder($userId); // <<-- penting utk files.folder_id NOT NULL
         } else {
             $folderId = (int) $folderId;
-            $f = $this->folders->where('user_id', $userId)->find($folderId);
+            $f = $this->folders->find($folderId);
             if (!$f) {
                 return $this->fail('Folder tidak ditemukan', 404);
             }
@@ -206,7 +207,6 @@ class DriveController extends BaseController
     private function ensureRootFolder(int $userId): int
     {
         $root = $this->folders
-            ->where('user_id', $userId)
             ->where('parent_id', null)
             ->where('name', 'Root')
             ->first();
@@ -224,7 +224,7 @@ class DriveController extends BaseController
     public function download($id)
     {
         $userId = $this->uid();
-        $row = $this->files->where('user_id', $userId)->find((int) $id);
+        $row = $this->files->find((int) $id);
         if (!$row)
             return $this->response->setStatusCode(404);
         $abs = WRITEPATH . $row['file_path'];
@@ -236,7 +236,7 @@ class DriveController extends BaseController
     public function softdeleteFile($id)
     {
         $userId = $this->uid();
-        $row = $this->files->where('user_id', $userId)->find((int) $id);
+        $row = $this->files->find((int) $id);
         if ($row) {
             $this->files->update((int) $id, [
                 'deleted_at' => date('Y-m-d H:i:s'),
@@ -248,7 +248,7 @@ class DriveController extends BaseController
     public function softdeleteFolder($id)
     {
         $userId = $this->uid();
-        $folder = $this->folders->where('user_id', $userId)->find((int) $id);
+        $folder = $this->folders->find((int) $id);
         if ($folder) {
             $now = date('Y-m-d H:i:s');
             $this->softDeleteFolderRecursive((int) $id, $userId, $now);
@@ -263,14 +263,14 @@ class DriveController extends BaseController
             'deleted_at' => $deletedAt,
         ]);
         // soft delete file di folder ini
-        $files = $this->files->where('user_id', $userId)->where('folder_id', $folderId)->findAll();
+        $files = $this->files->where('folder_id', $folderId)->findAll();
         foreach ($files as $f) {
             $this->files->update((int) $f['id'], [
                 'deleted_at' => $deletedAt,
             ]);
         }
         // telusuri subfolder
-        $subs = $this->folders->where('user_id', $userId)->where('parent_id', $folderId)->findAll();
+        $subs = $this->folders->where('parent_id', $folderId)->findAll();
         foreach ($subs as $s) {
             $this->softDeleteFolderRecursive((int) $s['id'], $userId, $deletedAt);
         }
@@ -279,7 +279,7 @@ class DriveController extends BaseController
     public function restoreFile($id)
     {
         $userId = $this->uid();
-        $row = $this->files->where('user_id', $userId)->find((int) $id);
+        $row = $this->files->find((int) $id);
         if ($row) {
             $this->files->update((int) $id, [
                 'deleted_at' => null,
@@ -290,7 +290,7 @@ class DriveController extends BaseController
     public function restoreFolder($id)
     {
         $userId = $this->uid();
-        $folder = $this->folders->where('user_id', $userId)->find((int) $id);
+        $folder = $this->folders->find((int) $id);
         if ($folder) {
             $this->restoreFolderRecursive((int) $id, $userId);
         }
@@ -304,14 +304,14 @@ class DriveController extends BaseController
             'deleted_at' => null,
         ]);
         // restore file di folder ini
-        $files = $this->files->where('user_id', $userId)->where('folder_id', $folderId)->findAll();
+        $files = $this->files->where('folder_id', $folderId)->findAll();
         foreach ($files as $f) {
             $this->files->update((int) $f['id'], [
                 'deleted_at' => null,
             ]);
         }
         // telusuri subfolder
-        $subs = $this->folders->where('user_id', $userId)->where('parent_id', $folderId)->findAll();
+        $subs = $this->folders->where('parent_id', $folderId)->findAll();
         foreach ($subs as $s) {
             $this->restoreFolderRecursive((int) $s['id'], $userId);
         }
@@ -320,7 +320,7 @@ class DriveController extends BaseController
     public function deleteFile($id)
     {
         $userId = $this->uid();
-        $row = $this->files->where('user_id', $userId)->find((int) $id);
+        $row = $this->files->find((int) $id);
         if ($row) {
             @unlink(WRITEPATH . $row['file_path']);
             $this->files->delete((int) $id); // soft delete tidak dipakai, langsung delete
@@ -331,7 +331,7 @@ class DriveController extends BaseController
     public function deleteFolder($id)
     {
         $userId = $this->uid();
-        $folder = $this->folders->where('user_id', $userId)->find((int) $id);
+        $folder = $this->folders->find((int) $id);
         if (!$folder)
             return $this->fail('Folder tidak ditemukan', 404);
 
@@ -348,12 +348,12 @@ class DriveController extends BaseController
     private function deletePhysicalFilesRecursive(int $folderId, int $userId): void
     {
         // hapus file di folder ini
-        $files = $this->files->where('user_id', $userId)->where('folder_id', $folderId)->findAll();
+        $files = $this->files->where('folder_id', $folderId)->findAll();
         foreach ($files as $f) {
             @unlink(WRITEPATH . $f['file_path']);
         }
         // telusuri subfolder
-        $subs = $this->folders->where('user_id', $userId)->where('parent_id', $folderId)->findAll();
+        $subs = $this->folders->where('parent_id', $folderId)->findAll();
         foreach ($subs as $s) {
             $this->deletePhysicalFilesRecursive((int) $s['id'], $userId);
         }
@@ -386,7 +386,8 @@ class DriveController extends BaseController
         }
 
         // Cari file
-        $file = $this->files->where('user_id', $userId)->find($fileId);
+        // $file = $this->files->find($fileId);
+        $file = $this->files->find($fileId);
         if (!$file) {
             return $this->response->setJSON([
                 'success' => false,
@@ -466,7 +467,8 @@ class DriveController extends BaseController
         }
 
         // Cari folder
-        $folder = $this->folders->where('user_id', $userId)->find($folderId);
+        // $folder = $this->folders->find($folderId);
+        $folder = $this->folders->find($folderId);
         if (!$folder) {
             return $this->response->setJSON([
                 'success' => false,
@@ -534,6 +536,7 @@ class DriveController extends BaseController
     {
         $folders = $this->folders
             ->where('parent_id', $parentId)
+            ->where('deleted_at', null)
             ->orderBy('name', 'ASC')
             ->findAll();
 

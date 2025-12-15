@@ -44,9 +44,10 @@ class FolderModel extends Model
     protected $beforeDelete = [];
     protected $afterDelete = [];
 
-    public function listChildren(int $userId, ?int $parentId): array
+    public function listChildren(?int $parentId): array
     {
-        return $this->where('user_id', $userId)
+        // return $this->where('user_id', $userId)
+        return $this
             ->where('parent_id', $parentId)
             ->where('deleted_at IS NULL', null, false)
             ->orderBy('name', 'ASC')
@@ -55,7 +56,8 @@ class FolderModel extends Model
 
     public function listChildrenInTrash(int $userId, ?int $parentId): array
     {
-        return $this->where('user_id', $userId)
+        // return $this->where('user_id', $userId)
+        return $this
             ->where('parent_id', $parentId)
             ->where('deleted_at IS NOT NULL', null, false)
             ->orderBy('name', 'ASC')
@@ -76,7 +78,7 @@ class FolderModel extends Model
     public function search($userId, $searchQuery)
     {
         return $this
-            ->where('user_id', $userId)
+            // ->where('user_id', $userId)
             ->like('name', $searchQuery, 'both')
             ->orderBy('name', 'ASC')
             ->findAll();

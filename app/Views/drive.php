@@ -424,24 +424,31 @@
     <div class="row mb-4 position-relative">
         <div class="col d-flex justify-content-center align-items-center gap-2 position-relative">
 
-            <!-- Buat Folder -->
-            <button class="btn btn-light border rounded-pill px-3 py-2 shadow-sm hover-elevate" data-bs-toggle="modal"
-                data-bs-target="#createFolderModal">
-                <i class="bi bi-folder-plus me-2"></i> Buat Folder
-            </button>
+            <?php if (auth()->loggedIn()) {
+                if (auth()->user()->inGroup('admin', 'superadmin')) { ?>
+                    <!-- Buat Folder -->
+                    <button class="btn btn-light border rounded-pill px-3 py-2 shadow-sm hover-elevate" data-bs-toggle="modal"
+                        data-bs-target="#createFolderModal">
+                        <i class="bi bi-folder-plus me-2"></i> Buat Folder
+                    </button>
+                <?php }
+            } ?>
 
             <!-- Upload File -->
-            <form action="<?= base_url('drive/upload') ?>" method="post" enctype="multipart/form-data">
-                <input type="hidden" name="folder_id" value="<?= esc($currentFolder['id'] ?? '') ?>">
-                <input type="file" name="file" id="uploadFile"
-                    accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.xls,.xlsx,.csv,.docx,.doc,.ppt,.pptx,.zip,.rar" hidden
-                    onchange="this.form.submit()">
-                <button type="button" class="btn btn-light border rounded-pill px-3 py-2 shadow-sm hover-elevate"
-                    onclick="document.getElementById('uploadFile').click()">
-                    <i class="bi bi-upload me-2"></i> Upload File
-                </button>
-            </form>
-
+            <?php if (auth()->loggedIn()) {
+                if (auth()->user()->inGroup('admin', 'superadmin')) { ?>
+                    <form action="<?= base_url('drive/upload') ?>" method="post" enctype="multipart/form-data">
+                        <input type="hidden" name="folder_id" value="<?= esc($currentFolder['id'] ?? '') ?>">
+                        <input type="file" name="file" id="uploadFile"
+                            accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.xls,.xlsx,.csv,.docx,.doc,.ppt,.pptx,.zip,.rar" hidden
+                            onchange="this.form.submit()">
+                        <button type="button" class="btn btn-light border rounded-pill px-3 py-2 shadow-sm hover-elevate"
+                            onclick="document.getElementById('uploadFile').click()">
+                            <i class="bi bi-upload me-2"></i> Upload File
+                        </button>
+                    </form>
+                <?php }
+            } ?>
             <div class="btn-group position-absolute end-0" role="group" aria-label="View toggle">
                 <button type="button" id="listViewBtn" class="btn btn-outline-secondary">
                     <i class="bi bi-list"></i>
@@ -457,12 +464,23 @@
     <div id="gridView" class="row">
         <?php if (empty($folders) && empty($files)): ?>
             <!-- Empty state -->
-            <div class="col-12 text-center my-5 empty-state">
-                <img src="<?= base_url('assets/img/undraw.svg') ?>" alt="Belum ada file atau folder" width="300">
-                <h5 class="mt-3 text-muted">
-                    Klik <b>Buat Folder</b> atau <b>Upload File</b> untuk menambahkan
-                </h5>
-            </div>
+            <?php if (auth()->loggedIn()) {
+                if (auth()->user()->inGroup('admin', 'superadmin')) { ?>
+                    <div class="col-12 text-center my-5 empty-state">
+                        <img src="<?= base_url('assets/img/undraw.svg') ?>" alt="Belum ada file atau folder" width="300">
+                        <h5 class="mt-3 text-muted">
+                            Klik <b>Buat Folder</b> atau <b>Upload File</b> untuk menambahkan
+                        </h5>
+                    </div>
+                <?php } else { ?>
+                    <div class="col-12 text-center my-5 empty-state">
+                        <img src="<?= base_url('assets/img/undraw.svg') ?>" alt="Belum ada file atau folder" width="300">
+                        <h5 class="mt-3 text-muted">
+                            Belum ada file atau folder di drive Anda.
+                        </h5>
+                    </div>
+                <?php }
+            } ?>
         <?php else: ?>
             <!-- Loop Folder -->
             <div class="row" id="container-search">
@@ -480,27 +498,32 @@
                                 </a>
 
                                 <!-- Dropdown Menu -->
-                                <div class="dropdown ms-2">
-                                    <button class="btn btn-sm border-0 text-secondary" type="button" data-bs-toggle="dropdown"
-                                        aria-expanded="false" title="Options">
-                                        <i class="bi bi-three-dots-vertical"></i>
-                                    </button>
-                                    <ul class="dropdown-menu dropup-menu">
-                                        <li>
-                                            <button class="dropdown-item" onclick="renameHandler.call(this)"
-                                                data-id="<?= $folder['id'] ?>" data-type="folder"
-                                                data-name="<?= esc($folder['name']) ?>">
-                                                <i class="bi bi-pencil"></i> Rename
+                                <?php if (auth()->loggedIn()) {
+                                    if (auth()->user()->inGroup('admin', 'superadmin')) { ?>
+                                        <div class="dropdown ms-2">
+                                            <button class="btn btn-sm border-0 text-secondary" type="button" data-bs-toggle="dropdown"
+                                                aria-expanded="false" title="Options">
+                                                <i class="bi bi-three-dots-vertical"></i>
                                             </button>
-                                        </li>
-                                        <li>
-                                            <button type="button" class="dropdown-item btn-delete"
-                                                data-del-folder="<?= esc($folder['id']) ?>">
-                                                <i class="bi bi-trash me-2"></i> Delete
-                                            </button>
-                                        </li>
-                                    </ul>
-                                </div>
+                                            <ul class="dropdown-menu dropup-menu">
+
+                                                <li>
+                                                    <button class="dropdown-item" onclick="renameHandler.call(this)"
+                                                        data-id="<?= $folder['id'] ?>" data-type="folder"
+                                                        data-name="<?= esc($folder['name']) ?>">
+                                                        <i class="bi bi-pencil"></i> Rename
+                                                    </button>
+                                                </li>
+                                                <li>
+                                                    <button type="button" class="dropdown-item btn-delete"
+                                                        data-del-folder="<?= esc($folder['id']) ?>">
+                                                        <i class="bi bi-trash me-2"></i> Delete
+                                                    </button>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    <?php }
+                                } ?>
                             </div>
                         </div>
                     </div>
@@ -574,30 +597,34 @@
                                 </span>
                             </div>
 
-                            <div class="dropdown ms-2">
-                                <button class="btn btn-sm border-0 text-secondary" data-bs-toggle="dropdown"
-                                    aria-expanded="false">
-                                    <i class="bi bi-three-dots-vertical"></i>
-                                </button>
-                                <ul class="dropdown-menu dropup-menu">
-                                    <li>
-                                        <a class="dropdown-item" href="<?= base_url('drive/download/' . $file['id']) ?>">
-                                            <i class="bi bi-download me-2"></i> Download
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <button class="dropdown-item" onclick="renameHandler.call(this)"
-                                            data-id="<?= $file['id'] ?>" data-type="file" data-name="<?= esc($file['name']) ?>">
-                                            <i class="bi bi-pencil"></i> Rename
+                            <?php if (auth()->loggedIn()) {
+                                if (auth()->user()->inGroup('admin', 'superadmin')) { ?>
+                                    <div class="dropdown ms-2">
+                                        <button class="btn btn-sm border-0 text-secondary" data-bs-toggle="dropdown"
+                                            aria-expanded="false">
+                                            <i class="bi bi-three-dots-vertical"></i>
                                         </button>
-                                    </li>
-                                    <li>
-                                        <button class="dropdown-item btn-delete" data-del-file="<?= $file['id'] ?>">
-                                            <i class="bi bi-trash me-2"></i> Delete
-                                        </button>
-                                    </li>
-                                </ul>
-                            </div>
+                                        <ul class="dropdown-menu dropup-menu">
+                                            <li>
+                                                <a class="dropdown-item" href="<?= base_url('drive/download/' . $file['id']) ?>">
+                                                    <i class="bi bi-download me-2"></i> Download
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <button class="dropdown-item" onclick="renameHandler.call(this)"
+                                                    data-id="<?= $file['id'] ?>" data-type="file" data-name="<?= esc($file['name']) ?>">
+                                                    <i class="bi bi-pencil"></i> Rename
+                                                </button>
+                                            </li>
+                                            <li>
+                                                <button class="dropdown-item btn-delete" data-del-file="<?= $file['id'] ?>">
+                                                    <i class="bi bi-trash me-2"></i> Delete
+                                                </button>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                <?php }
+                            } ?>
                         </div>
                     </div>
                 </div>
@@ -607,12 +634,23 @@
 
     <div id="listView" class="d-none">
         <?php if (empty($folders) && empty($files)): ?>
-            <div class="col-12 text-center my-5 empty-state">
-                <img src="<?= base_url('assets/img/undraw.svg') ?>" alt="Belum ada file atau folder" width="300">
-                <h5 class="mt-3 text-muted">
-                    Klik <b>Buat Folder</b> atau <b>Upload File</b> untuk menambahkan
-                </h5>
-            </div>
+            <?php if (auth()->loggedIn()) {
+                if (auth()->user()->inGroup('admin', 'superadmin')) { ?>
+                    <div class="col-12 text-center my-5 empty-state">
+                        <img src="<?= base_url('assets/img/undraw.svg') ?>" alt="Belum ada file atau folder" width="300">
+                        <h5 class="mt-3 text-muted">
+                            Klik <b>Buat Folder</b> atau <b>Upload File</b> untuk menambahkan
+                        </h5>
+                    </div>
+                <?php } else { ?>
+                    <div class="col-12 text-center my-5 empty-state">
+                        <img src="<?= base_url('assets/img/undraw.svg') ?>" alt="Belum ada file atau folder" width="300">
+                        <h5 class="mt-3 text-muted">
+                            Belum ada file atau folder di drive Anda.
+                        </h5>
+                    </div>
+                <?php }
+            } ?>
         <?php else: ?>
             <table class="table align-middle">
                 <thead class="table-light">
@@ -636,30 +674,34 @@
                                     <span class="text-truncate" style="max-width: 250px;"><?= esc($folder['name']) ?></span>
                                 </a>
                             </td>
-                            <td><?= esc($folder['owner'] ?? 'Saya') ?></td>
+                            <td><?= esc(get_username($folder['user_id']) ?? 'Saya') ?></td>
                             <td><?= date('d M Y', strtotime($folder['updated_at'] ?? $folder['created_at'])) ?></td>
                             <td>–</td>
                             <td class="text-end">
-                                <div class="dropdown">
-                                    <button class="btn btn-sm border-0 text-secondary" data-bs-toggle="dropdown">
-                                        <i class="bi bi-three-dots-vertical"></i>
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-end">
-                                        <li>
-                                            <button class="dropdown-item" onclick="renameHandler.call(this)"
-                                                data-id="<?= $folder['id'] ?>" data-type="folder"
-                                                data-name="<?= esc($folder['name']) ?>">
-                                                <i class="bi bi-pencil"></i> Rename
+                                <?php if (auth()->loggedIn()) {
+                                    if (auth()->user()->inGroup('admin', 'superadmin')) { ?>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm border-0 text-secondary" data-bs-toggle="dropdown">
+                                                <i class="bi bi-three-dots-vertical"></i>
                                             </button>
-                                        </li>
-                                        <li>
-                                            <button type="button" class="dropdown-item btn-delete"
-                                                data-del-folder="<?= esc($folder['id']) ?>">
-                                                <i class="bi bi-trash me-2"></i> Delete
-                                            </button>
-                                        </li>
-                                    </ul>
-                                </div>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li>
+                                                    <button class="dropdown-item" onclick="renameHandler.call(this)"
+                                                        data-id="<?= $folder['id'] ?>" data-type="folder"
+                                                        data-name="<?= esc($folder['name']) ?>">
+                                                        <i class="bi bi-pencil"></i> Rename
+                                                    </button>
+                                                </li>
+                                                <li>
+                                                    <button type="button" class="dropdown-item btn-delete"
+                                                        data-del-folder="<?= esc($folder['id']) ?>">
+                                                        <i class="bi bi-trash me-2"></i> Delete
+                                                    </button>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    <?php }
+                                } ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -708,7 +750,7 @@
                                     <span class="text-truncate" style="max-width: 250px;"><?= esc($file['name']) ?></span>
                                 </a>
                             </td>
-                            <td><?= esc($file['owner'] ?? 'Saya') ?></td>
+                            <td><?= esc(get_username($file['user_id']) ?? 'Saya') ?></td>
                             <td><?= date('d M Y', strtotime($file['updated_at'] ?? $file['created_at'])) ?></td>
                             <td><?= formatSize($file['size']) ?? '-' ?></td>
                             <td class="text-end">
@@ -1593,5 +1635,5 @@
         }
     }
 
-</script>   
+</script>
 <?= $this->endSection() ?>

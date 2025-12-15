@@ -53,18 +53,18 @@ class FileModel extends Model
     protected $beforeDelete = [];
     protected $afterDelete = [];
 
-    public function listInFolder(int $userId, ?int $folderId): array
+    public function listInFolder(?int $folderId): array
     {
-        return $this->where('user_id', $userId)
+        return $this
             ->where('folder_id', $folderId)
             ->where('deleted_at', null)
             ->orderBy('name', 'ASC')
             ->findAll();
     }
 
-    public function listInTrash(int $userId, ?int $folderId): array
+    public function listInTrash(?int $folderId): array
     {
-        return $this->where('user_id', $userId)
+        return $this
             // ->where('folder_id', $folderId)
             ->where('deleted_at IS NOT NULL')
             ->orderBy('deleted_at', 'DESC')
