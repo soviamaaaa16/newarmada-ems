@@ -561,10 +561,10 @@ class DriveController extends BaseController
 
         // Validasi ekstensi
         $ext = strtolower($file->getClientExtension());
-        if ($ext !== 'zip') {
+        if (!in_array($ext, ['zip', 'rar'])) {
             return $this->response->setJSON([
                 'success' => false,
-                'message' => 'File harus berformat ZIP',
+                'message' => 'File harus berformat ZIP/RAR',
             ])->setStatusCode(422);
         }
 

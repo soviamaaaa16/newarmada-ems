@@ -1399,7 +1399,7 @@
         });
 
         // Timeout handler (30 detik)
-        xhr.timeout = 300000; // 5 menit untuk file besar
+        xhr.timeout = 600000; // 5 menit untuk file besar
         xhr.addEventListener('timeout', () => {
             Swal.fire({
                 icon: 'error',
