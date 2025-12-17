@@ -449,6 +449,20 @@
                     </form>
                 <?php }
             } ?>
+            <!-- Upload Zip File -->
+            <?php if (auth()->loggedIn()) {
+                if (auth()->user()->inGroup('admin', 'superadmin')) { ?>
+                    <form id="uploadZipForm" enctype="multipart/form-data">
+                        <input type="hidden" name="folder_id" value="<?= esc($currentFolder['id'] ?? '') ?>">
+                        <input type="file" name="zip_file" id="uploadZipFile" accept=".zip,.rar" hidden>
+
+                        <button type="button" class="btn btn-light border rounded-pill px-3 py-2 shadow-sm hover-elevate"
+                            onclick="document.getElementById('uploadZipFile').click()">
+                            <i class="bi bi-file-zip me-2"></i> Upload ZIP
+                        </button>
+                    </form>
+                <?php }
+            } ?>
             <div class="btn-group position-absolute end-0" role="group" aria-label="View toggle">
                 <button type="button" id="listViewBtn" class="btn btn-outline-secondary">
                     <i class="bi bi-list"></i>
@@ -946,7 +960,6 @@
 
         showPreview();
     }
-
     // Fungsi showPreview tetap sama, tapi pastikan downloadBtn menggunakan URL yang benar
     function showPreview() {
         const modal = document.getElementById('previewModal');
@@ -1188,6 +1201,230 @@
         }, 100);
     }
 
+</script>
+<script>
+    document.getElementById('uploadZipFile').addEventListener('change', function (e) {
+        const file = e.target.files[0];
+
+        if (!file) return;
+
+        // Validasi ekstensi
+        const fileName = file.name.toLowerCase();
+        if (!fileName.endsWith('.zip') && !fileName.endsWith('.rar')) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Format File Salah!',
+                text: 'Hanya file ZIP atau RAR yang diperbolehkan',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#ef4444',
+            });
+            e.target.value = ''; // Reset input
+            return;
+        }
+
+        // Validasi ukuran (500MB)
+        const maxSize = 500 * 1024 * 1024;
+        if (file.size > maxSize) {
+            Swal.fire({
+                icon: 'error',
+                title: 'File Terlalu Besar!',
+                text: 'Ukuran file maksimal 500MB',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#ef4444',
+            });
+            e.target.value = ''; // Reset input
+            return;
+        }
+
+        // Konfirmasi upload
+        Swal.fire({
+            title: 'Upload File?',
+            html: `
+            <div style="text-align: left; padding: 10px;">
+                <p style="margin-bottom: 10px;">File akan diekstrak ke folder ini:</p>
+                <div style="background: #f3f4f6; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+                    <strong>📁 <?= $currentFolder['name'] ?? 'Root' ?></strong>
+                </div>
+                <div style="color: #6b7280; font-size: 14px;">
+                    <div style="margin-bottom: 5px;">📦 File: <strong>${file.name}</strong></div>
+                    <div>📊 Ukuran: <strong>${formatBytes(file.size)}</strong></div>
+                </div>
+            </div>
+        `,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Upload!',
+            cancelButtonText: 'Batal',
+            confirmButtonColor: '#667eea',
+            cancelButtonColor: '#6b7280',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                uploadZipFile(file);
+            } else {
+                e.target.value = ''; // Reset input jika batal
+            }
+        });
+    });
+
+    function uploadZipFile(file) {
+        const form = document.getElementById('uploadZipForm');
+        const formData = new FormData(form);
+
+        // Show loading dengan progress bar
+        Swal.fire({
+            title: 'Mengupload & Mengekstrak...',
+            html: `
+            <div style="margin: 20px 0;">
+                <div style="font-size: 64px; margin-bottom: 15px;">📦</div>
+                <p style="margin-bottom: 5px; color: #6b7280;">Sedang memproses file...</p>
+                <p style="font-size: 14px; color: #9ca3af; margin-bottom: 20px;">${file.name}</p>
+                <div style="width: 100%; height: 30px; background: #e5e7eb; border-radius: 15px; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);">
+                    <div id="uploadProgressBar" style="height: 100%; background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); width: 0%; transition: width 0.3s; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 14px; box-shadow: 0 2px 8px rgba(102, 126, 234, 0.5);">0%</div>
+                </div>
+                <p style="margin-top: 15px; font-size: 13px; color: #9ca3af;">Mohon tunggu, proses ini mungkin memakan waktu beberapa saat...</p>
+            </div>
+        `,
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        const xhr = new XMLHttpRequest();
+
+        // Upload progress
+        xhr.upload.addEventListener('progress', (e) => {
+            if (e.lengthComputable) {
+                const percent = Math.round((e.loaded / e.total) * 100);
+                const progressBar = document.getElementById('uploadProgressBar');
+                if (progressBar) {
+                    progressBar.style.width = percent + '%';
+                    progressBar.textContent = percent + '%';
+                }
+            }
+        });
+
+        // Upload complete
+        xhr.addEventListener('load', () => {
+            if (xhr.status === 200) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+
+                    if (response.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil Diekstrak! 🎉',
+                            html: `
+                            <div style="text-align: left; padding: 15px;">
+                                <p style="margin-bottom: 20px; color: #4b5563;">${response.message}</p>
+                                <div style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-left: 4px solid #22c55e; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #bbf7d0;">
+                                        <span style="display: flex; align-items: center;">
+                                            <i class="bi bi-folder-fill" style="color: #f59e0b; font-size: 20px; margin-right: 10px;"></i>
+                                            <span style="color: #374151;">Folder dibuat</span>
+                                        </span>
+                                        <strong style="font-size: 24px; color: #f59e0b;">${response.total_folders}</strong>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span style="display: flex; align-items: center;">
+                                            <i class="bi bi-file-earmark-fill" style="color: #3b82f6; font-size: 20px; margin-right: 10px;"></i>
+                                            <span style="color: #374151;">File diekstrak</span>
+                                        </span>
+                                        <strong style="font-size: 24px; color: #3b82f6;">${response.total_files}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        `,
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#22c55e',
+                            timerProgressBar: false,
+                        }).then(() => {
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal Upload!',
+                            html: `
+                            <div style="text-align: left; padding: 10px;">
+                                <p style="color: #ef4444;">${response.message}</p>
+                                ${response.errors ? `<pre style="background: #fee; padding: 10px; border-radius: 5px; font-size: 12px; text-align: left; overflow-x: auto;">${JSON.stringify(response.errors, null, 2)}</pre>` : ''}
+                            </div>
+                        `,
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#ef4444',
+                        });
+                    }
+                } catch (e) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'Gagal memproses response dari server',
+                        footer: `<small>Error: ${e.message}</small>`,
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#ef4444',
+                    });
+                }
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error Server!',
+                    html: `
+                    <p>Terjadi kesalahan pada server</p>
+                    <small style="color: #6b7280;">Status Code: ${xhr.status}</small>
+                `,
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#ef4444',
+                });
+            }
+
+            // Reset input file
+            document.getElementById('uploadZipFile').value = '';
+        });
+
+        // Upload error
+        xhr.addEventListener('error', () => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error Koneksi!',
+                text: 'Terjadi kesalahan saat mengupload file. Periksa koneksi internet Anda.',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#ef4444',
+            });
+
+            // Reset input file
+            document.getElementById('uploadZipFile').value = '';
+        });
+
+        // Timeout handler (30 detik)
+        xhr.timeout = 300000; // 5 menit untuk file besar
+        xhr.addEventListener('timeout', () => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Timeout!',
+                text: 'Upload memakan waktu terlalu lama. Coba lagi dengan file yang lebih kecil.',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#ef4444',
+            });
+
+            // Reset input file
+            document.getElementById('uploadZipFile').value = '';
+        });
+
+        xhr.open('POST', '<?= base_url('drive/uploadZip') ?>');
+        xhr.send(formData);
+    }
+
+    // Helper function untuk format bytes
+    function formatBytes(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+    }
 </script>
 <script>
     $(document).ready(function () {

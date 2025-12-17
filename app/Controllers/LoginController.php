@@ -51,7 +51,7 @@ class LoginController extends BaseController
 
         // Attempt login
         $result = auth()->attempt($credentials, $remember);
-        // $user = $resultgetUser()
+        $user = $result();
 
         if (!$result->isOK()) {
             return redirect()->back()
@@ -65,6 +65,13 @@ class LoginController extends BaseController
                 ->withInput()
                 ->with('error', 'Akun Anda belum diaktifkan. Silakan contact IT HRD untuk aktivasi.');
         }
+        if (auth()->user()->isBanned()) {
+            auth()->logout();
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Akun Anda belum diaktifkan. Silakan contact IT HRD untuk aktivasi.');
+        }
+
         // Login berhasil
         if (auth()->user()->inGroup('superadmin')) {
             return redirect()->to('/admin/users')->with('message', 'Login berhasil!');

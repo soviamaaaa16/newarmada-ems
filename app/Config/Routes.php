@@ -81,6 +81,7 @@ $routes->group('/', ['filter' => 'session'], function ($routes) {
     // ----------------------------------------
     $routes->get('drive', 'DriveController::index');
     $routes->get('drive/f/(:num)', 'DriveController::index/$1'); // View specific folder
+    $routes->post('drive/uploadZip', 'DriveController::uploadZip');
 
     // ----------------------------------------
     // SEARCH (Basic search for all users)
