@@ -185,7 +185,7 @@
         } 
         
         .left-box p { 
-            width: 80%; 
+            width: 70%; 
             margin-top: 15px; 
             line-height: 1.6; 
             opacity: 0.9; 
@@ -303,14 +303,11 @@
 </head>
 
 <body>
-    <!-- <div class="welcome-text1">WElCOME TO</div>
-    <div class="welcome-text">ARMADA ISO 14001:2015 DATABASE</div> -->
-
     <div class="container">
         <div class="left-box"> 
-            <h1 class="hero-title">SELAMAT DATANG DI<br><span class="hero-brand">DATABASE ISO 14001</span><br>PT MEKAR ARMADA JAYA</h1>
+            <h1 class="hero-title">SELAMAT DATANG DI<br><span class="hero-brand">DATABASE ISO 14001:2015</span><br>PT MEKAR ARMADA JAYA</h1>
             <p class="hero-lead">
-              Sistem manajemen dokumen ISO 14001:2015 untuk PT Mekar Armada Jaya — Plant Tambun.
+              Sistem manajemen dokumen ISO 14001:2015 PT Mekar Armada Jaya — Plant Tambun.
               Silakan login ke akun Anda untuk melanjutkan.
             </p>
         </div>
@@ -318,7 +315,7 @@
         <div class="right-box"> 
             <div class="hero-logos">
                 <img src="/assets/img/SAFETY_FIRST-removebg-preview.png" alt="Logo Safety">
-                <img src="/assets/img/ISO 1.png" alt="Logo ISO">
+                <!-- <img src="/assets/img/ISO 1.png" alt="Logo ISO"> -->
                 <img src="/assets/img/ISO.png" alt="Logo ISO 2">
                 <img src="/assets/img/icoii-nobg.png" alt="Logo Perusahaan">
             </div>

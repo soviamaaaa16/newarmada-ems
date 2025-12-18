@@ -1,9 +1,9 @@
-<div class="d-flex">
+<div class="d-flex min-vh-100">
   <nav id="sidebar" class="d-none d-md-block bg-light border-end">
     <div class="p-3">
-      <div class="d-flex flex-column align-items-center mb-4 mt-3">
+      <!-- <div class="d-flex flex-column align-items-center mb-4 mt-3">
         <img src="<?= base_url('assets/img/MAJ-LOGO-3.png') ?>" alt="Logo" style="height: 50px; width: auto;">
-      </div>
+      </div> -->
 
       <!-- Menu -->
       <ul class="nav flex-column">
@@ -27,7 +27,7 @@
           <?php }
         } ?>
 
-        <li class="nav-item mt-4 border-top pt-3"></li>
+        <li class="nav-item mt-4 border-top pt-3">
           <div class="folder-tree-container">
               <div id="folder-tree"></div>
           </div>
@@ -54,7 +54,7 @@
     </div>
     <div class="offcanvas-body">
       <div class="d-flex flex-column align-items-center mb-4 mt-3">
-        <img src="<?= base_url('assets/img/MAJ-LOGO-3.png') ?>" alt="Logo" style="height: 50px; width: auto;">
+        <img src="<?= base_url('assets/img/MAJ-LOGO-3.png') ?>" alt="Logo" style="height: 40px; width: auto;">
       </div>
 
       <ul class="nav flex-column">
@@ -68,14 +68,6 @@
             <i class="bi bi-trash me-2"></i> Sampah
           </a>
         </li>
-
-        <li class="nav-item mt-4 border-top pt-3">
-          <div class="folder-tree-container">
-              <h6 class="text-uppercase small fw-bold mb-2">Folders</h6>
-              <div id="folder-tree"></div>
-          </div>
-        </li>
-
         <li class="nav-item mt-4 border-top pt-3">
           <a href="<?= base_url('guide') ?>" class="nav-link text-dark" data-bs-dismiss="offcanvas">
             <i class="bi bi-book me-2"></i> Panduan Pengguna
@@ -90,16 +82,6 @@
     </div>
   </div>
 
-  <div class="flex-grow-1 p-4">
-    <button class="btn btn-outline-secondary d-md-none mb-3" type="button" data-bs-toggle="offcanvas"
-      data-bs-target="#mobileSidebar">
-      <i class="bi bi-list"></i>
-    </button>
-
-    <div>
-      <?= $this->renderSection('content') ?>
-    </div>
-  </div>
 </div>
 </body>
 
@@ -118,7 +100,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function renderTree(nodes, activeId) {
         let html = "<ul>";
-
+ 
         nodes.forEach(n => {
             const hasChildren = n.children && n.children.length > 0;
             const isActive = activeId == n.id;
@@ -220,9 +202,10 @@ document.addEventListener("DOMContentLoaded", function () {
 }
 
 #sidebar {
-  height: 100vh;
-  /* overflow-y: auto;
-  overflow-x: hidden; */
+  overflow-y: auto;
+  overflow-x: hidden;
+  width: 300px;
+  flex-shrink: 0
 }
 
 #folder-tree span {
@@ -237,4 +220,5 @@ document.addEventListener("DOMContentLoaded", function () {
   display: inline-block;
   padding-right: 10px;
 }
+
 </style>

@@ -3865,7 +3865,7 @@ textarea.form-control-lg {
 @media (min-width: 576px) {
   .navbar-expand-sm {
     flex-wrap: nowrap;
-    justify-content: flex-start;
+    justify-content: flex-end;
   }
   .navbar-expand-sm .navbar-nav {
     flex-direction: row;
@@ -4099,7 +4099,8 @@ textarea.form-control-lg {
 }
 .navbar-expand {
   flex-wrap: nowrap;
-  justify-content: flex-start;
+  justify-content: flex-end;
+  padding-right: 15px;
 }
 .navbar-expand .navbar-nav {
   flex-direction: row;
@@ -6059,7 +6060,7 @@ textarea.form-control-lg {
 }
 .offcanvas, .offcanvas-xxl, .offcanvas-xl, .offcanvas-lg, .offcanvas-md, .offcanvas-sm {
   --bs-offcanvas-zindex: 1045;
-  --bs-offcanvas-width: 400px;
+  /* --bs-offcanvas-width: 400px; */
   --bs-offcanvas-height: 30vh;
   --bs-offcanvas-padding-x: 1rem;
   --bs-offcanvas-padding-y: 1rem;
@@ -10956,6 +10957,21 @@ html {
   #mainNav.navbar-shrink .navbar-brand {
     font-size: 1.5em;
   }
+
+  .navbar-logos {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      /* padding-left: 5px;  */
+  }
+  .logo-armada img {
+      height: 20px;
+      width: auto;
+  }
+  .logo-iso img {
+      height: 25px;
+      width: auto;
+  }
 }
 .form-floating input.form-control,
 .form-floating textarea.form-control {
@@ -11050,7 +11066,7 @@ html {
 }
 
 .copyright {
-  background-color: #1a252f;
+  background-color: #F8F9FB;
 }
 
 .empty-state {
@@ -11119,7 +11135,7 @@ button.btn i {
   #sidebar {
     position: fixed;
     z-index: 1050;
-    height: 100%;
+    min-height: 100%;
   }
 }
 
@@ -11260,6 +11276,47 @@ button.btn i {
 .folder-node span:last-child {
     cursor: default;
 }
+
+.navbar {
+    background-color: #F8F9FB !important;
+    border-bottom: 1px solid #E6E8EB;
+    backdrop-filter: blur(6px);
+    position: sticky;
+    z-index: 1030;
+    top: 0;
+    min-height: 64px;
+    align-items: center;
+}
+
+/* ROOT */
+.app-root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* WRAPPER SIDEBAR + CONTENT */
+.app-wrapper {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+/* SIDEBAR */
+#sidebar {
+  width: 300px;
+  flex-shrink: 0;
+  overflow-y: auto;
+}
+
+/* CONTENT */
+.app-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+}
+
+
 
 
 
