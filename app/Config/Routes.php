@@ -97,9 +97,7 @@ $routes->group('/', ['filter' => 'session'], function ($routes) {
     // ----------------------------------------
     // FILE OPERATIONS - VIEW (All users can view/preview)
     // ----------------------------------------
-    $routes->get('drive/preview/(:num)', 'DriveController::preview/$1', [
-        'filter' => 'permission:files.view',
-    ]);
+    $routes->get('drive/preview/(:num)', 'DriveController::preview/$1');
 
     // ----------------------------------------
     // FILE OPERATIONS - UPLOAD (Admin/Superadmin only)
@@ -115,10 +113,8 @@ $routes->group('/', ['filter' => 'session'], function ($routes) {
     // ----------------------------------------
     // FILE OPERATIONS - DOWNLOAD (Admin/Superadmin only)
     // ----------------------------------------
-    $routes->get('drive/download/(:num)', 'DriveController::download/$1', [
-        'filter' => 'permission:files.download',
-    ]);
-
+    $routes->get('drive/download/(:num)', 'DriveController::download/$1');
+    $routes->get('drive/view/(:num)', 'DriveController::view/$1');
     $routes->post('drive/download-multiple', 'DriveController::downloadMultiple', [
         'filter' => 'permission:files.download',
     ]);
@@ -270,6 +266,7 @@ $routes->group('/', ['filter' => 'session'], function ($routes) {
 // ADMIN PANEL ROUTES
 // (Require admin.access permission)
 // ============================================
+$routes->get('drive/public-view/(:num)', 'DriveController::publicView/$1'); // Tanpa auth
 
 $routes->group('admin', ['filter' => 'permission:admin.access'], function ($routes) {
 

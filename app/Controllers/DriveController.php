@@ -217,7 +217,75 @@ class DriveController extends BaseController
             return $this->response->setStatusCode(404);
         return $this->response->download($abs, null)->setFileName($row['name']);
     }
+    // Di Controller Drive
+    public function view($id)
+    {
+        // $userId = $this->uid();
+        $row = $this->files->find((int) $id);
 
+        if (!$row) {
+            return $this->response->setStatusCode(404);
+        }
+
+        $abs = WRITEPATH . ltrim($row['file_path'], '/\\');
+
+        if (!is_file($abs)) {
+            return $this->response->setStatusCode(404);
+        }
+
+        // Get mime type
+        $mimeType = mime_content_type($abs);
+
+        // Set headers untuk direct view (bukan download)
+        return $this->response
+            ->setHeader('Content-Type', $mimeType)
+            ->setHeader('Content-Disposition', 'inline; filename="' . $row['name'] . '"')
+            ->setHeader('Content-Length', filesize($abs))
+            ->setHeader('Access-Control-Allow-Origin', '*')  // CORS untuk Office Viewer
+            ->setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS')
+            ->setHeader('Access-Control-Allow-Headers', 'Content-Type')
+            ->setBody(file_get_contents($abs));
+    }
+    // Method baru untuk public view
+    // Method untuk public view (tanpa auth untuk Office Viewer)
+    public function publicView($id)
+    {
+        // TIDAK pakai $this->uid() - biar bisa diakses tanpa login
+
+        $row = $this->files->find((int) $id);
+
+        if (!$row) {
+            return $this->response->setStatusCode(404)->setJSON(['error' => 'File not found']);
+        }
+
+        $abs = WRITEPATH . ltrim($row['file_path'], '/\\');
+
+        if (!file_exists($abs) || !is_file($abs)) {
+            log_message('error', 'File not found: ' . $abs);
+            return $this->response->setStatusCode(404)->setJSON(['error' => 'File not found on disk']);
+        }
+
+        $mimeType = mime_content_type($abs);
+
+        // Handle OPTIONS request untuk CORS preflight
+        if ($this->request->getMethod() === 'options') {
+            return $this->response
+                ->setHeader('Access-Control-Allow-Origin', '*')
+                ->setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS')
+                ->setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+                ->setStatusCode(200);
+        }
+
+        return $this->response
+            ->setHeader('Content-Type', $mimeType)
+            ->setHeader('Content-Disposition', 'inline; filename="' . $row['name'] . '"')
+            ->setHeader('Content-Length', filesize($abs))
+            ->setHeader('Access-Control-Allow-Origin', '*')
+            ->setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS')
+            ->setHeader('Access-Control-Expose-Headers', 'Content-Length, Content-Type')
+            ->setHeader('Cache-Control', 'public, max-age=3600')
+            ->setBody(file_get_contents($abs));
+    }
     public function softdeleteFile($id)
     {
         $userId = $this->uid();

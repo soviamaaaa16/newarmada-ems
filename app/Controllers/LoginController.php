@@ -51,7 +51,7 @@ class LoginController extends BaseController
 
         // Attempt login
         $result = auth()->attempt($credentials, $remember);
-        $user = $result();
+        // $user = $result();
 
         if (!$result->isOK()) {
             return redirect()->back()
