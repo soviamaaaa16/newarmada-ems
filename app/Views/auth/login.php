@@ -178,71 +178,67 @@
                 linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
                 url("/assets/img/container_background.jpg");
 
-            position: relative;
-        }
-
-        .left-box h1 {
-            font-size: 38px;
-            font-weight: 700;
-        }
-
-        .left-box p {
-            width: 80%;
-            margin-top: 15px;
-            line-height: 1.6;
-            opacity: 0.9;
-        }
-
-        .right-box {
-            flex: 1;
-            background: white;
-            padding: 50px 60px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .right-box h2 {
-            text-align: center;
-            font-size: 20px;
-            color: #385ba7ff;
-            margin-bottom: 30px;
-            letter-spacing: 1px;
-        }
-
-        .form-group {
-            margin-bottom: 18px;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 12px 15px;
-            border-radius: 25px;
-            border: none;
-            background: #f1f1ff;
-            outline: none;
-            font-size: 14px;
-        }
-
-        .remember-box {
-            display: flex;
-            justify-content: space-between;
-            font-size: 13px;
-            color: #666;
-            margin-bottom: 25px;
-        }
-
-        .remember-box a {
-            text-decoration: none;
-            color: #385ba7ff;
-        }
-
-        .btn-login {
-            width: 100%;
-            padding: 12px;
-            border-radius: 25px;
-            border: none;
-            cursor: pointer;
+            position: relative; 
+        } 
+        
+        .left-box h1 { 
+            font-size: 38px; 
+            font-weight: 700; 
+        } 
+        
+        .left-box p { 
+            width: 70%; 
+            margin-top: 15px; 
+            line-height: 1.6; 
+            opacity: 0.9; 
+        } 
+        
+        .right-box { 
+            flex: 1; 
+            background: white; 
+            padding: 50px 60px; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+        } 
+            
+        .right-box h2 { 
+            text-align: center; 
+            font-size: 20px; 
+            color: #385ba7ff; margin-bottom: 30px; 
+            letter-spacing: 1px; 
+        } 
+        
+        .form-group { 
+            margin-bottom: 18px; 
+        } 
+        
+        .form-group input { 
+            width: 100%; 
+            padding: 12px 15px; 
+            border-radius: 25px; 
+            border: none; background: #f1f1ff; 
+            outline: none; font-size: 14px; 
+        } 
+        
+        .remember-box { 
+            display: flex; 
+            justify-content: space-between; 
+            font-size: 13px; color: #666; 
+            margin-bottom: 25px; 
+        } 
+        
+        .remember-box a { 
+            text-decoration: none; 
+            color: #385ba7ff; 
+        } 
+        
+        .btn-login { 
+            width: 100%; 
+            padding: 12px; 
+            border-radius: 25px; 
+            border: none; 
+            cursor: pointer; 
             background: linear-gradient(90deg, #6a85b6, #bac8e0);
             color: white;
             font-size: 15px;
@@ -311,23 +307,19 @@
 </head>
 
 <body>
-    <!-- <div class="welcome-text1">WElCOME TO</div>
-    <div class="welcome-text">ARMADA ISO 14001:2015 DATABASE</div> -->
-
     <div class="container">
-        <div class="left-box">
-            <h1 class="hero-title">SELAMAT DATANG DI<br><span class="hero-brand">DATABASE ISO 14001</span><br>PT MEKAR
-                ARMADA JAYA</h1>
+        <div class="left-box"> 
+            <h1 class="hero-title">SELAMAT DATANG DI<br><span class="hero-brand">DATABASE ISO 14001:2015</span><br>PT MEKAR ARMADA JAYA</h1>
             <p class="hero-lead">
-                Sistem manajemen dokumen ISO 14001:2015 untuk PT Mekar Armada Jaya — Plant Tambun.
-                Silakan login ke akun Anda untuk melanjutkan.
+              Sistem manajemen dokumen ISO 14001:2015 PT Mekar Armada Jaya — Plant Tambun.
+              Silakan login ke akun Anda untuk melanjutkan.
             </p>
         </div>
 
         <div class="right-box">
             <div class="hero-logos">
                 <img src="/assets/img/SAFETY_FIRST-removebg-preview.png" alt="Logo Safety">
-                <img src="/assets/img/ISO 1.png" alt="Logo ISO">
+                <!-- <img src="/assets/img/ISO 1.png" alt="Logo ISO"> -->
                 <img src="/assets/img/ISO.png" alt="Logo ISO 2">
                 <img src="/assets/img/icoii-nobg.png" alt="Logo Perusahaan">
             </div>

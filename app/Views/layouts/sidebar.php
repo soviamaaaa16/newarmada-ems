@@ -1,9 +1,9 @@
-<div class="d-flex">
+<div class="d-flex min-vh-100">
   <nav id="sidebar" class="d-none d-md-block bg-light border-end">
     <div class="p-3">
-      <div class="d-flex flex-column align-items-center mb-4 mt-3">
+      <!-- <div class="d-flex flex-column align-items-center mb-4 mt-3">
         <img src="<?= base_url('assets/img/MAJ-LOGO-3.png') ?>" alt="Logo" style="height: 50px; width: auto;">
-      </div>
+      </div> -->
 
       <!-- Menu -->
       <ul class="nav flex-column">
@@ -27,10 +27,10 @@
           <?php }
         } ?>
 
-        <li class="nav-item mt-4 border-top pt-3"></li>
-        <div class="folder-tree-container">
-          <div id="folder-tree"></div>
-        </div>
+        <li class="nav-item mt-4 border-top pt-3">
+          <div class="folder-tree-container">
+              <div id="folder-tree"></div>
+          </div>
         </li>
 
         <li class="nav-item mt-4 border-top pt-3">
@@ -54,7 +54,7 @@
     </div>
     <div class="offcanvas-body">
       <div class="d-flex flex-column align-items-center mb-4 mt-3">
-        <img src="<?= base_url('assets/img/MAJ-LOGO-3.png') ?>" alt="Logo" style="height: 50px; width: auto;">
+        <img src="<?= base_url('assets/img/MAJ-LOGO-3.png') ?>" alt="Logo" style="height: 40px; width: auto;">
       </div>
 
       <ul class="nav flex-column">
@@ -68,14 +68,6 @@
             <i class="bi bi-trash me-2"></i> Sampah
           </a>
         </li>
-
-        <li class="nav-item mt-4 border-top pt-3">
-          <div class="folder-tree-container">
-            <h6 class="text-uppercase small fw-bold mb-2">Folders</h6>
-            <div id="folder-tree"></div>
-          </div>
-        </li>
-
         <li class="nav-item mt-4 border-top pt-3">
           <a href="<?= base_url('guide') ?>" class="nav-link text-dark" data-bs-dismiss="offcanvas">
             <i class="bi bi-book me-2"></i> Panduan Pengguna
@@ -90,22 +82,13 @@
     </div>
   </div>
 
-  <div class="flex-grow-1 p-4">
-    <button class="btn btn-outline-secondary d-md-none mb-3" type="button" data-bs-toggle="offcanvas"
-      data-bs-target="#mobileSidebar">
-      <i class="bi bi-list"></i>
-    </button>
-
-    <div>
-      <?= $this->renderSection('content') ?>
-    </div>
-  </div>
 </div>
 </body>
 
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     const currentFolderId = "<?= $currentFolderId ?? '' ?>";
+    console.log("PHP currentFolderId:", "<?= $currentFolderId ?? 'NULL' ?>");
 
     fetch("<?= base_url('drive/getFolderTree') ?>")
       .then(res => res.json())
@@ -116,38 +99,84 @@
         enableTreeActions();
       });
 
+    // function renderTree(nodes, activeId) {
+    //     let html = "<ul>";
+ 
+    //     nodes.forEach(n => {
+    //         const hasChildren = n.children && n.children.length > 0;
+    //         const isActive = activeId == n.id;
+
+    //     html += `
+    //             <li>
+    //                 <div class="folder-node ${isActive ? 'active' : ''}" data-id="${n.id}">
+    //                     ${hasChildren ? `<span class="tree-toggle ${isActive ? 'open' : ''}"></span>` : `<span style="width:12px"></span>`}
+    //                     <i class="bi bi-folder"></i>
+    //                     <span>${n.name}</span>
+    //                 </div>
+
+    //                 ${hasChildren ? `
+    //                     <div class="tree-children" style="display:${isActive ? 'block' : 'none'}">
+    //                         ${renderTree(n.children, activeId)}
+    //                     </div>` : ""}
+    //             </li>
+    //         `;
+    //   });
+
+    //   html += "</ul>";
+    //   return html;
+    // }
+
     function renderTree(nodes, activeId) {
       let html = "<ul>";
 
       nodes.forEach(n => {
         const hasChildren = n.children && n.children.length > 0;
-        const isActive = activeId == n.id;
+        const isActive = activeId === n.id.toString();
+        const hasActiveDescendant = hasActiveChild(n, activeId);
+      
+        const shouldOpen = isActive || hasActiveDescendant;
+
+        console.log("ACTIVE:", activeId, typeof activeId);
+        console.log("NODE:", n.id, typeof n.id);
 
         html += `
-                <li>
-                    <div class="folder-node ${isActive ? 'active' : ''}" data-id="${n.id}">
-                        ${hasChildren ? `<span class="tree-toggle ${isActive ? 'open' : ''}"></span>` : `<span style="width:12px"></span>`}
-                        <i class="bi bi-folder"></i>
-                        <span>${n.name}</span>
-                    </div>
-
-                    ${hasChildren ? `
-                        <div class="tree-children" style="display:${isActive ? 'block' : 'none'}">
-                            ${renderTree(n.children, activeId)}
-                        </div>` : ""}
-                </li>
-            `;
+          <li>
+            <div class="folder-node ${isActive ? 'active' : ''}" data-id="${n.id}">
+              ${hasChildren 
+                ? `<span class="tree-toggle ${shouldOpen ? 'open' : ''}"></span>` 
+                : `<span style="width:12px"></span>`}
+              <i class="bi bi-folder"></i>
+              <span>${n.name}</span>
+            </div>
+      
+            ${hasChildren ? `
+              <div class="tree-children" style="display:${shouldOpen ? 'block' : 'none'}">
+                ${renderTree(n.children, activeId)}
+              </div>
+            ` : ""}
+          </li>
+        `;
       });
-
+    
       html += "</ul>";
       return html;
-    }
+    } 
+
+    setTimeout(() => {
+      document.querySelector('.folder-node.active')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
+    }, 200);
+
+
 
     function enableTreeActions() {
       document.querySelectorAll(".tree-toggle").forEach(toggle => {
         toggle.addEventListener("click", function (e) {
           e.stopPropagation();
           const children = this.parentElement.nextElementSibling;
+          if (!children) return;
 
           if (children.style.display === "none") {
             children.style.display = "block";
@@ -166,6 +195,16 @@
         });
       });
     }
+
+    function hasActiveChild(node, activeId) {
+      if (!node.children) return false;
+
+      return node.children.some(child => {
+        return child.id.toString() === activeId
+            || hasActiveChild(child, activeId);
+      });
+    }
+
   });
 </script>
 
@@ -220,9 +259,10 @@
   }
 
   #sidebar {
-    height: 100vh;
-    /* overflow-y: auto;
-  overflow-x: hidden; */
+    overflow-y: auto;
+    overflow-x: hidden;
+    width: 300px;
+    flex-shrink: 0;
   }
 
   #folder-tree span {
@@ -237,4 +277,5 @@
     display: inline-block;
     padding-right: 10px;
   }
+
 </style>

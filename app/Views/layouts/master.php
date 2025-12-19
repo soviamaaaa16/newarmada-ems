@@ -26,17 +26,34 @@
     <?= $this->renderSection('css') ?>
 </head>
 
-<body class="d-flex flex-column min-vh-100">
+<body class="app-root">
+
+
+    <?= $this->include('layouts/navbar') ?>
+
+    <div class="app-wrapper">
+
+        <aside id="sidebar" class="bg-light border-end d-none d-md-block">
+            <?= $this->include('layouts/sidebar') ?>
+        </aside>
+
+        <!-- CONTENT -->
+        <main class="flex-fill">
+            <?= $this->renderSection('content') ?>
+        </main>
+
+    </div>
+
+    <?= $this->include('layouts/footer') ?>
 
     <!-- Navbar, header, dll -->
 
     <!-- Sidebar -->
-    <?= $this->include('layouts/sidebar') ?>
 
     <!-- Konten halaman -->
-    <main class="flex-fill">
+    <!-- <main class="flex-fill">
         <?= $this->renderSection('content') ?>
-    </main>
+    </main> -->
 
     <!-- Script -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
