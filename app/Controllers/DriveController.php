@@ -6,6 +6,7 @@ use App\Models\FolderModel;
 use App\Models\FileModel;
 use App\Controllers\BaseController;
 use CodeIgniter\HTTP\ResponseInterface;
+use ZipArchive;
 
 class DriveController extends BaseController
 {
@@ -25,7 +26,8 @@ class DriveController extends BaseController
         $userId = $this->uid();
         $currentFolder = null;
         if ($folderId !== null) {
-            $currentFolder = $this->folders->where('user_id', $userId)->find($folderId);
+            // $currentFolder = $this->folders->find($folderId);
+            $currentFolder = $this->folders->find($folderId);
             if (!$currentFolder) {
                 throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Folder tidak ditemukan');
             }
@@ -38,8 +40,8 @@ class DriveController extends BaseController
         $data = [
             'currentFolder' => $currentFolder,
             'breadcrumbs' => $folderId ? $this->folders->breadcrumb($folderId) : [],
-            'folders' => $this->folders->listChildren($userId, $parentId),
-            'files' => $this->files->listInFolder($userId, $parentId),
+            'folders' => $this->folders->listChildren($parentId),
+            'files' => $this->files->listInFolder($parentId),
             'searchQuery' => null,
             'isSearch' => false,
         ];
@@ -134,7 +136,7 @@ class DriveController extends BaseController
             $folderId = $this->ensureRootFolder($userId); // <<-- penting utk files.folder_id NOT NULL
         } else {
             $folderId = (int) $folderId;
-            $f = $this->folders->where('user_id', $userId)->find($folderId);
+            $f = $this->folders->find($folderId);
             if (!$f) {
                 return $this->fail('Folder tidak ditemukan', 404);
             }
@@ -203,28 +205,11 @@ class DriveController extends BaseController
 
         return redirect()->back()->withInput()->with('success', ['message' => 'success to save data.']);
     }
-    private function ensureRootFolder(int $userId): int
-    {
-        $root = $this->folders
-            ->where('user_id', $userId)
-            ->where('parent_id', null)
-            ->where('name', 'Root')
-            ->first();
 
-        if ($root)
-            return (int) $root['id'];
-
-        return (int) $this->folders->insert([
-            'user_id' => $userId,
-            'parent_id' => null,
-            'name' => 'Root',
-            'created_at' => date('Y-m-d H:i:s'),
-        ], true);
-    }
     public function download($id)
     {
         $userId = $this->uid();
-        $row = $this->files->where('user_id', $userId)->find((int) $id);
+        $row = $this->files->find((int) $id);
         if (!$row)
             return $this->response->setStatusCode(404);
         $abs = WRITEPATH . $row['file_path'];
@@ -236,7 +221,7 @@ class DriveController extends BaseController
     public function softdeleteFile($id)
     {
         $userId = $this->uid();
-        $row = $this->files->where('user_id', $userId)->find((int) $id);
+        $row = $this->files->find((int) $id);
         if ($row) {
             $this->files->update((int) $id, [
                 'deleted_at' => date('Y-m-d H:i:s'),
@@ -248,7 +233,7 @@ class DriveController extends BaseController
     public function softdeleteFolder($id)
     {
         $userId = $this->uid();
-        $folder = $this->folders->where('user_id', $userId)->find((int) $id);
+        $folder = $this->folders->find((int) $id);
         if ($folder) {
             $now = date('Y-m-d H:i:s');
             $this->softDeleteFolderRecursive((int) $id, $userId, $now);
@@ -263,14 +248,14 @@ class DriveController extends BaseController
             'deleted_at' => $deletedAt,
         ]);
         // soft delete file di folder ini
-        $files = $this->files->where('user_id', $userId)->where('folder_id', $folderId)->findAll();
+        $files = $this->files->where('folder_id', $folderId)->findAll();
         foreach ($files as $f) {
             $this->files->update((int) $f['id'], [
                 'deleted_at' => $deletedAt,
             ]);
         }
         // telusuri subfolder
-        $subs = $this->folders->where('user_id', $userId)->where('parent_id', $folderId)->findAll();
+        $subs = $this->folders->where('parent_id', $folderId)->findAll();
         foreach ($subs as $s) {
             $this->softDeleteFolderRecursive((int) $s['id'], $userId, $deletedAt);
         }
@@ -279,7 +264,7 @@ class DriveController extends BaseController
     public function restoreFile($id)
     {
         $userId = $this->uid();
-        $row = $this->files->where('user_id', $userId)->find((int) $id);
+        $row = $this->files->find((int) $id);
         if ($row) {
             $this->files->update((int) $id, [
                 'deleted_at' => null,
@@ -290,7 +275,7 @@ class DriveController extends BaseController
     public function restoreFolder($id)
     {
         $userId = $this->uid();
-        $folder = $this->folders->where('user_id', $userId)->find((int) $id);
+        $folder = $this->folders->find((int) $id);
         if ($folder) {
             $this->restoreFolderRecursive((int) $id, $userId);
         }
@@ -304,14 +289,14 @@ class DriveController extends BaseController
             'deleted_at' => null,
         ]);
         // restore file di folder ini
-        $files = $this->files->where('user_id', $userId)->where('folder_id', $folderId)->findAll();
+        $files = $this->files->where('folder_id', $folderId)->findAll();
         foreach ($files as $f) {
             $this->files->update((int) $f['id'], [
                 'deleted_at' => null,
             ]);
         }
         // telusuri subfolder
-        $subs = $this->folders->where('user_id', $userId)->where('parent_id', $folderId)->findAll();
+        $subs = $this->folders->where('parent_id', $folderId)->findAll();
         foreach ($subs as $s) {
             $this->restoreFolderRecursive((int) $s['id'], $userId);
         }
@@ -320,7 +305,7 @@ class DriveController extends BaseController
     public function deleteFile($id)
     {
         $userId = $this->uid();
-        $row = $this->files->where('user_id', $userId)->find((int) $id);
+        $row = $this->files->find((int) $id);
         if ($row) {
             @unlink(WRITEPATH . $row['file_path']);
             $this->files->delete((int) $id); // soft delete tidak dipakai, langsung delete
@@ -331,7 +316,7 @@ class DriveController extends BaseController
     public function deleteFolder($id)
     {
         $userId = $this->uid();
-        $folder = $this->folders->where('user_id', $userId)->find((int) $id);
+        $folder = $this->folders->find((int) $id);
         if (!$folder)
             return $this->fail('Folder tidak ditemukan', 404);
 
@@ -348,12 +333,12 @@ class DriveController extends BaseController
     private function deletePhysicalFilesRecursive(int $folderId, int $userId): void
     {
         // hapus file di folder ini
-        $files = $this->files->where('user_id', $userId)->where('folder_id', $folderId)->findAll();
+        $files = $this->files->where('folder_id', $folderId)->findAll();
         foreach ($files as $f) {
             @unlink(WRITEPATH . $f['file_path']);
         }
         // telusuri subfolder
-        $subs = $this->folders->where('user_id', $userId)->where('parent_id', $folderId)->findAll();
+        $subs = $this->folders->where('parent_id', $folderId)->findAll();
         foreach ($subs as $s) {
             $this->deletePhysicalFilesRecursive((int) $s['id'], $userId);
         }
@@ -386,7 +371,8 @@ class DriveController extends BaseController
         }
 
         // Cari file
-        $file = $this->files->where('user_id', $userId)->find($fileId);
+        // $file = $this->files->find($fileId);
+        $file = $this->files->find($fileId);
         if (!$file) {
             return $this->response->setJSON([
                 'success' => false,
@@ -466,7 +452,8 @@ class DriveController extends BaseController
         }
 
         // Cari folder
-        $folder = $this->folders->where('user_id', $userId)->find($folderId);
+        // $folder = $this->folders->find($folderId);
+        $folder = $this->folders->find($folderId);
         if (!$folder) {
             return $this->response->setJSON([
                 'success' => false,
@@ -534,6 +521,7 @@ class DriveController extends BaseController
     {
         $folders = $this->folders
             ->where('parent_id', $parentId)
+            ->where('deleted_at', null)
             ->orderBy('name', 'ASC')
             ->findAll();
 
@@ -548,5 +536,327 @@ class DriveController extends BaseController
     {
         $tree = $this->buildTree(null);
         return $this->response->setJSON($tree);
+    }
+
+    /**
+     * Upload dan extract ZIP file ke folder struktur
+     */
+    /**
+     * Upload dan extract ZIP file ke folder struktur
+     */
+    public function uploadZip()
+    {
+        $userId = $this->uid();
+        $parentFolderId = $this->request->getPost('folder_id'); // '' saat di root
+
+        // Validasi file ZIP
+        $file = $this->request->getFile('zip_file');
+
+        if (!$file || !$file->isValid()) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'File tidak valid atau tidak ada file yang diupload',
+            ])->setStatusCode(422);
+        }
+
+        // Validasi ekstensi
+        $ext = strtolower($file->getClientExtension());
+        if (!in_array($ext, ['zip', 'rar'])) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'File harus berformat ZIP/RAR',
+            ])->setStatusCode(422);
+        }
+
+        // Validasi ukuran (500MB = 524288000 bytes)
+        if ($file->getSize() > 524288000) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Ukuran file maksimal 50MB',
+            ])->setStatusCode(422);
+        }
+
+        if (!$file->isValid()) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'File tidak valid',
+            ])->setStatusCode(422);
+        }
+
+        // Pastikan parent folder valid
+        if ($parentFolderId === '' || $parentFolderId === null) {
+            $parentFolderId = $this->ensureRootFolder($userId);
+        } else {
+            $parentFolderId = (int) $parentFolderId;
+            $parentFolder = $this->folders->find($parentFolderId);
+            if (!$parentFolder) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'Folder tujuan tidak ditemukan',
+                ])->setStatusCode(404);
+            }
+        }
+
+        try {
+            // Simpan ZIP ke temporary location
+            $tempDir = WRITEPATH . 'uploads/temp/';
+            if (!is_dir($tempDir)) {
+                mkdir($tempDir, 0775, true);
+            }
+
+            $tempZipPath = $tempDir . 'temp_' . time() . '_' . $file->getName();
+            $file->move($tempDir, basename($tempZipPath));
+
+            // Extract dan process ZIP
+            $result = $this->extractZipToFolders($tempZipPath, $parentFolderId, $userId);
+
+            // Hapus file ZIP temporary
+            if (file_exists($tempZipPath)) {
+                @unlink($tempZipPath);
+            }
+
+            if ($result['success']) {
+                return $this->response->setJSON([
+                    'success' => true,
+                    'message' => 'ZIP berhasil diekstrak',
+                    'total_folders' => $result['folder_count'],
+                    'total_files' => $result['file_count'],
+                    'root_folder_id' => $result['root_folder_id'],
+                ]);
+            } else {
+                return $this->response->setJSON($result)->setStatusCode(500);
+            }
+
+        } catch (\Exception $e) {
+            log_message('error', 'ZIP Upload Error: ' . $e->getMessage());
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ])->setStatusCode(500);
+        }
+    }
+
+    /**
+     * Extract ZIP dan buat struktur folder + file di database
+     */
+    private function extractZipToFolders(string $zipPath, int $parentFolderId, int $userId): array
+    {
+        $zip = new ZipArchive();
+        $res = $zip->open($zipPath);
+
+        if ($res !== TRUE) {
+            return [
+                'success' => false,
+                'message' => 'Gagal membuka file ZIP',
+            ];
+        }
+
+        // Ekstensi file yang diizinkan (sama dengan upload biasa)
+        $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'xls', 'xlsx', 'csv', 'doc', 'docx', 'ppt', 'pptx', 'zip', 'rar'];
+
+        $fileCount = 0;
+        $folderCount = 0;
+        $folderMap = []; // mapping path -> folder_id
+
+        // Extract langsung ke parent folder yang sedang dibuka
+        // TIDAK buat folder baru dengan nama ZIP
+        $rootFolderId = $parentFolderId;
+
+        // Scan semua file dalam ZIP
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $stat = $zip->statIndex($i);
+            $fullPath = $stat['name'];
+
+            // Skip __MACOSX, .DS_Store, dan hidden files
+            if (
+                strpos($fullPath, '__MACOSX') !== false ||
+                strpos($fullPath, '.DS_Store') !== false ||
+                basename($fullPath)[0] === '.'
+            ) {
+                continue;
+            }
+
+            // Sanitize path
+            $fullPath = $this->sanitizePath($fullPath);
+
+            // Jika path diakhiri dengan /, ini adalah folder
+            if (substr($fullPath, -1) === '/') {
+                $folderPath = rtrim($fullPath, '/');
+                $this->ensureFolderPath($folderPath, $rootFolderId, $userId, $folderMap, $folderCount);
+                continue;
+            }
+
+            // Ini adalah file
+            $pathInfo = pathinfo($fullPath);
+            $fileName = $pathInfo['basename'];
+            $dirPath = isset($pathInfo['dirname']) && $pathInfo['dirname'] !== '.' ? $pathInfo['dirname'] : '';
+            $fileExt = strtolower($pathInfo['extension'] ?? '');
+
+            // Validasi ekstensi
+            if (!in_array($fileExt, $allowedExtensions)) {
+                log_message('info', "Skipped file (invalid extension): $fullPath");
+                continue;
+            }
+
+            // Pastikan folder parent ada
+            $targetFolderId = $rootFolderId;
+            if ($dirPath !== '') {
+                $targetFolderId = $this->ensureFolderPath($dirPath, $rootFolderId, $userId, $folderMap, $folderCount);
+            }
+
+            // Extract file ke lokasi temporary
+            $tempExtractDir = WRITEPATH . 'uploads/temp/extract_' . time() . '/';
+            if (!is_dir($tempExtractDir)) {
+                mkdir($tempExtractDir, 0775, true);
+            }
+
+            $tempFilePath = $tempExtractDir . $fileName;
+
+            // Extract file spesifik
+            $fileContent = $zip->getFromIndex($i);
+            if ($fileContent === false) {
+                log_message('error', "Failed to extract: $fullPath");
+                continue;
+            }
+
+            file_put_contents($tempFilePath, $fileContent);
+
+            // Pindahkan ke lokasi final
+            $finalDir = WRITEPATH . 'uploads/drive/' . $userId . '/' . $targetFolderId . '/';
+            if (!is_dir($finalDir)) {
+                mkdir($finalDir, 0775, true);
+            }
+
+            $randomName = bin2hex(random_bytes(16)) . '.' . $fileExt;
+            $finalPath = $finalDir . $randomName;
+
+            if (rename($tempFilePath, $finalPath)) {
+                // Simpan ke database
+                $fileSize = filesize($finalPath);
+                $typeBucket = \App\Models\FileTypeModel::mapExtToType($fileExt);
+
+                $this->files->insert([
+                    'user_id' => $userId,
+                    'folder_id' => $targetFolderId,
+                    'name' => $fileName,
+                    'file_path' => 'uploads/drive/' . $userId . '/' . $targetFolderId . '/' . $randomName,
+                    'file_type' => $typeBucket,
+                    'size' => $fileSize,
+                    'created_at' => date('Y-m-d H:i:s'),
+                    'created_by' => (string) (session('username') ?? null),
+                ], true);
+
+                $fileCount++;
+            }
+
+            // Cleanup temp file jika masih ada
+            if (file_exists($tempFilePath)) {
+                @unlink($tempFilePath);
+            }
+        }
+
+        $zip->close();
+
+        // Cleanup temp extract directory
+        $tempExtractDir = WRITEPATH . 'uploads/temp/extract_' . time() . '/';
+        if (is_dir($tempExtractDir)) {
+            @rmdir($tempExtractDir);
+        }
+
+        return [
+            'success' => true,
+            'root_folder_id' => $rootFolderId,
+            'folder_count' => $folderCount,
+            'file_count' => $fileCount,
+        ];
+    }
+    /**
+     * Ensure folder path exists, create if needed
+     */
+    private function ensureFolderPath(string $path, int $rootFolderId, int $userId, array &$folderMap, int &$folderCount): int
+    {
+        // Jika sudah ada di map, return
+        if (isset($folderMap[$path])) {
+            return $folderMap[$path];
+        }
+
+        $parts = explode('/', trim($path, '/'));
+        $currentParentId = $rootFolderId;
+        $currentPath = '';
+
+        foreach ($parts as $folderName) {
+            $currentPath .= ($currentPath ? '/' : '') . $folderName;
+
+            // Cek apakah path ini sudah ada di map
+            if (isset($folderMap[$currentPath])) {
+                $currentParentId = $folderMap[$currentPath];
+                continue;
+            }
+
+            // Cek apakah folder dengan nama ini sudah ada di parent
+            $existing = $this->folders->where([
+                'user_id' => $userId,
+                'parent_id' => $currentParentId,
+                'name' => $folderName,
+            ])->first();
+
+            if ($existing) {
+                $folderId = (int) $existing['id'];
+            } else {
+                // Buat folder baru
+                $folderId = $this->folders->insert([
+                    'user_id' => $userId,
+                    'parent_id' => $currentParentId,
+                    'name' => $folderName,
+                    'created_at' => date('Y-m-d H:i:s'),
+                ], true);
+                $folderCount++;
+            }
+
+            $folderMap[$currentPath] = $folderId;
+            $currentParentId = $folderId;
+        }
+
+        return $currentParentId;
+    }
+
+    /**
+     * Sanitize path untuk keamanan
+     */
+    private function sanitizePath(string $path): string
+    {
+        // Remove path traversal attempts
+        $path = str_replace(['../', '..\\'], '', $path);
+
+        // Remove null bytes
+        $path = str_replace(chr(0), '', $path);
+
+        // Convert backslashes to forward slashes
+        $path = str_replace('\\', '/', $path);
+
+        return $path;
+    }
+
+    /**
+     * Ensure root folder exists for user
+     */
+    private function ensureRootFolder(int $userId): int
+    {
+        $root = $this->folders
+            ->where('user_id', $userId)
+            ->where('parent_id', null)
+            ->where('name', 'Root')
+            ->first();
+
+        if ($root) {
+            return (int) $root['id'];
+        }
+
+        return (int) $this->folders->insert([
+            'user_id' => $userId,
+            'parent_id' => null,
+            'name' => 'Root',
+            'created_at' => date('Y-m-d H:i:s'),
+        ], true);
     }
 }

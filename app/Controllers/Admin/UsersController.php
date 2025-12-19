@@ -10,6 +10,7 @@ namespace App\Controllers\Admin;
 use App\Controllers\BaseController;
 use CodeIgniter\Shield\Models\UserModel;
 use CodeIgniter\Shield\Entities\User;
+use App\Helpers\PermissionHelper;
 
 class UsersController extends BaseController
 {
@@ -20,6 +21,7 @@ class UsersController extends BaseController
     {
         $this->userModel = new UserModel();
         $this->db = \Config\Database::connect();
+
     }
 
     /**
@@ -99,7 +101,8 @@ class UsersController extends BaseController
             'group' => $this->request->getPost('group'),
             'created_at' => date('Y-m-d H:i:s'),
         ]);
-
+        // Assign DEFAULT permissions sesuai role
+        PermissionHelper::assignDefaultPermissions($userId, $this->request->getPost('group'));
         return redirect()->to('/admin/users')
             ->with('message', 'User created successfully!');
     }
@@ -407,7 +410,7 @@ class UsersController extends BaseController
     }
 
     /**
-     * Get available groups (hardcoded karena tidak ada tabel auth_groups)
+     * Get available groups
      */
     private function getAvailableGroups()
     {
@@ -431,7 +434,7 @@ class UsersController extends BaseController
     }
 
     /**
-     * Get available permissions (hardcoded karena tidak ada tabel auth_permissions)
+     * Get available permissions 
      */
     private function getAvailablePermissions()
     {

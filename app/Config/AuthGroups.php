@@ -42,76 +42,79 @@ class AuthGroups extends ShieldAuthGroups
      */
     public array $groups = [
         'superadmin' => [
-            'title'       => 'Super Admin',
-            'description' => 'Complete control of the site.',
+            'title' => 'Super Administrator',
+            'description' => 'Complete control of the site',
         ],
         'admin' => [
-            'title'       => 'Admin',
-            'description' => 'Day to day administrators of the site.',
-        ],
-        'developer' => [
-            'title'       => 'Developer',
-            'description' => 'Site programmers.',
+            'title' => 'Administrator',
+            'description' => 'Site administration access',
         ],
         'user' => [
-            'title'       => 'User',
-            'description' => 'General users of the site. Often customers.',
-        ],
-        'beta' => [
-            'title'       => 'Beta User',
-            'description' => 'Has access to beta-level features.',
+            'title' => 'Regular User',
+            'description' => 'Standard user access (view only)',
         ],
     ];
 
-    /**
-     * --------------------------------------------------------------------
-     * Permissions
-     * --------------------------------------------------------------------
-     * The available permissions in the system.
-     *
-     * If a permission is not listed here it cannot be used.
-     */
     public array $permissions = [
-        'admin.access'        => 'Can access the sites admin area',
-        'admin.settings'      => 'Can access the main site settings',
-        'users.manage-admins' => 'Can manage other admins',
-        'users.create'        => 'Can create new non-admin users',
-        'users.edit'          => 'Can edit existing non-admin users',
-        'users.delete'        => 'Can delete existing non-admin users',
-        'beta.access'         => 'Can access beta-level features',
+        // User Management
+        'users.view' => 'View users list',
+        'users.create' => 'Create new users',
+        'users.edit' => 'Edit user information',
+        'users.delete' => 'Delete users',
+        'users.ban' => 'Ban/Unban users',
+        'users.manage-permissions' => 'Manage user permissions',
+
+        // File Management
+        'files.view' => 'View files',
+        'files.upload' => 'Upload files',
+        'files.download' => 'Download files',
+        'files.delete' => 'Delete files',
+        'files.manage-all' => 'Manage all users files',
+
+        // Folder Management
+        'folders.view' => 'View folders',
+        'folders.create' => 'Create folders',
+        'folders.delete' => 'Delete folders',
+        'folders.manage-all' => 'Manage all users folders',
+
+        // Trash Management
+        'trash.view' => 'View trash',
+        'trash.restore' => 'Restore from trash',
+        'trash.empty' => 'Permanently delete from trash',
+
+        // Admin Panel
+        'admin.access' => 'Access admin panel',
+        'admin.settings' => 'Manage system settings',
+
+        // Search
+        'search.basic' => 'Use basic search features',
+        'search.advanced' => 'Use advanced search features',
     ];
 
-    /**
-     * --------------------------------------------------------------------
-     * Permissions Matrix
-     * --------------------------------------------------------------------
-     * Maps permissions to groups.
-     *
-     * This defines group-level permissions.
-     */
     public array $matrix = [
         'superadmin' => [
-            'admin.*',
-            'users.*',
-            'beta.*',
+            'users.*',      // All user permissions
+            'files.*',      // All file permissions
+            'folders.*',    // All folder permissions
+            'trash.*',      // All trash permissions
+            'admin.*',      // All admin permissions
+            'search.*',     // All search permissions
         ],
         'admin' => [
-            'admin.access',
+            'users.view',
             'users.create',
             'users.edit',
-            'users.delete',
-            'beta.access',
-        ],
-        'developer' => [
+            'users.ban',
+            'files.*',
+            'folders.*',
+            'trash.*',
             'admin.access',
-            'admin.settings',
-            'users.create',
-            'users.edit',
-            'beta.access',
+            'search.*',
         ],
-        'user' => [],
-        'beta' => [
-            'beta.access',
+        'user' => [
+            'files.view',
+            'folders.view',
+            'search.basic',
         ],
     ];
 }
