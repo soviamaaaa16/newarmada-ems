@@ -606,13 +606,15 @@
                 $isImage = in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp']);
                 $isPDF = ($ext === 'pdf');
                 $fileUrl = base_url('drive/download/' . $file['id']);
+                $viewUrl = base_url('drive/view/' . $file['id']);     // untuk preview/office viewer
                 $previewUrl = base_url('drive/preview/' . $file['id']);
+                // $fileUrls = WRITEPATH . $file['file_path'];
                 ?>
                 <div class="col-md-2 col-sm-4 col-6 mb-4">
-                    <div class="card file-card border-0 shadow-sm h-100" data-preview-url="<?= $fileUrl ?>"
+                    <div class="card file-card border-0 shadow-sm h-100" data-preview-url="<?= $previewUrl ?>"
                         data-filename="<?= esc($file['name']) ?>">
                         <div class="file-preview bg-light d-flex align-items-center justify-content-center style=height:150px; overflow:hidden;"
-                            onclick="previewFile('<?= $fileUrl ?>', '<?= esc($file['name']) ?>')">
+                            onclick="previewFile('<?= $viewUrl ?>', '<?= esc($file['name']) ?>')">
                             <?php if ($isImage): ?>
                                 <img src="<?= $fileUrl ?>" alt="<?= esc($file['name']) ?>" class="img-fluid rounded-top"
                                     style="max-height: 150px; object-fit: cover;">
@@ -782,6 +784,7 @@
                         <?php
                         $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
                         $icon = "bi bi-file-earmark-fill text-primary";
+
                         if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp']))
                             $icon = "bi bi-image text-danger";
                         if ($ext === 'pdf')
@@ -795,14 +798,24 @@
                         if (in_array($ext, ['zip', 'rar']))
                             $icon = "bi bi-file-earmark-zip text-secondary";
 
+                        // PENTING: Gunakan base_url untuk URL yang bisa diakses browser
+                        // $fileUrl = base_url('drive/download/' . $file['id']);
+                        $isImage = in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp']);
+                        $isPDF = ($ext === 'pdf');
                         $fileUrl = base_url('drive/download/' . $file['id']);
+                        $viewUrl = base_url('drive/view/' . $file['id']);     // untuk preview/office viewer
+                        $previewUrl = base_url('drive/preview/' . $file['id']);
                         ?>
                         <tr>
                             <td>
-                                <a href="#" onclick="previewFile('<?= $fileUrl ?>','<?= esc($file['name']) ?>')"
+                                <!-- FIXED: Gunakan $fileUrl, bukan WRITEPATH -->
+                                <a href="#"
+                                    onclick="event.preventDefault(); previewFile('<?= $viewUrl ?>', '<?= esc($file['name'], 'js') ?>');"
                                     class="text-decoration-none text-dark d-flex align-items-center">
                                     <i class="<?= $icon ?> fs-5 me-2"></i>
-                                    <span class="text-truncate" style="max-width: 250px;"><?= esc($file['name']) ?></span>
+                                    <span class="text-truncate" style="max-width: 250px;">
+                                        <?= esc($file['name']) ?>
+                                    </span>
                                 </a>
                             </td>
                             <td><?= esc(get_username($file['user_id']) ?? 'Saya') ?></td>
@@ -810,24 +823,29 @@
                             <td><?= formatSize($file['size']) ?? '-' ?></td>
                             <td class="text-end">
                                 <div class="dropdown">
-                                    <button class="btn btn-sm border-0 text-secondary" data-bs-toggle="dropdown">
+                                    <button class="btn btn-sm border-0 text-secondary" type="button" data-bs-toggle="dropdown"
+                                        aria-expanded="false">
                                         <i class="bi bi-three-dots-vertical"></i>
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end">
                                         <li>
-                                            <a class="dropdown-item" href="<?= base_url('drive/download/' . $file['id']) ?>">
+                                            <a class="dropdown-item" href="<?= $fileUrl ?>">
                                                 <i class="bi bi-download me-2"></i> Download
                                             </a>
                                         </li>
                                         <li>
-                                            <button class="dropdown-item" onclick="renameHandler.call(this)"
-                                                data-id="<?= $file['id'] ?>" data-type="file"
-                                                data-name="<?= esc($file['name']) ?>">
-                                                <i class="bi bi-pencil"></i> Rename
+                                            <button class="dropdown-item btn-rename" data-id="<?= $file['id'] ?>"
+                                                data-type="file" data-name="<?= esc($file['name']) ?>"
+                                                onclick="renameHandler.call(this)">
+                                                <i class="bi bi-pencil-square me-2"></i> Rename
                                             </button>
                                         </li>
                                         <li>
-                                            <button class="dropdown-item btn-delete" data-del-file="<?= $file['id'] ?>">
+                                            <hr class="dropdown-divider">
+                                        </li>
+                                        <li>
+                                            <button class="dropdown-item text-danger btn-delete"
+                                                data-del-file="<?= $file['id'] ?>">
                                                 <i class="bi bi-trash me-2"></i> Delete
                                             </button>
                                         </li>
@@ -860,7 +878,7 @@
     </div>
 
     <div class="preview-content" id="previewContent">
-        <!-- Preview content akan dimasukkan di sini -->3
+        <!-- Preview content akan dimasukkan di sini -->
     </div>
 
     <div class="preview-footer" id="previewFooter" style="display: none;">
@@ -955,10 +973,18 @@
 <?= $this->endSection() ?>
 
 <?= $this->section('js') ?>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 <script src="<?= base_url('assets/pdfjs/build/pdf.min.js') ?>"></script>
+
+
 <script>
     const pdfjsLib = window.pdfjsLib || window.pdfjs || window['pdfjs-dist/build/pdf'];
     pdfjsLib.GlobalWorkerOptions.workerSrc = '<?= base_url('assets/pdfjs/build/pdf.worker.min.js') ?>';
+    // ============================================
+    // PREVIEW FILE FUNCTION - UNIFIED VERSION
+    // ============================================
 
     let currentFile = {
         url: '',
@@ -971,27 +997,55 @@
     };
 
     /**
-     * Fungsi untuk membuka preview file
-     * @param {string} filePath - Path file (gambar atau PDF)
-     * Contoh: previewURL('/drive/file.jpg') atau previewURL('/drive/file.pdf')
-     */
-    function previewFile(fileUrl, filename) {
-        if (!fileUrl) {
-            console.error('File URL is required');
+    * Main preview function
+    * @param {string} fileUrl - URL untuk download file
+    * @param {string} fileName - Nama file dengan extension
+    */
+    async function previewFile(fileUrl, fileName) {
+        console.log('🔍 Preview request:', { fileUrl, fileName });
+
+        if (!fileUrl || !fileName) {
+            console.error('fileUrl dan fileName wajib diisi');
             return;
         }
 
-        const ext = filename.split('.').pop().toLowerCase();
+        // Extract extension dari fileName
+        const ext = fileName.split('.').pop().toLowerCase();
+
+        console.log('📄 File extension:', ext);
+
+        // Cek apakah file Office
+        const officeExts = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'];
+
+        if (officeExts.includes(ext)) {
+            // Tampilkan pilihan viewer untuk Office files
+            showOfficeViewerOptions(fileUrl, fileName, ext);
+        } else {
+            // Preview langsung untuk non-office files
+            previewNonOfficeFile(fileUrl, fileName, ext);
+        }
+    }
+
+    /**
+     * Preview untuk non-office files (image, PDF, text, dll)
+     */
+    function previewNonOfficeFile(fileUrl, fileName, ext) {
+        // Kategorikan file type
         const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
         const pdfExts = ['pdf'];
+        const textExts = ['txt', 'log', 'md'];
 
         let fileType = 'other';
         if (imageExts.includes(ext)) fileType = 'image';
         else if (pdfExts.includes(ext)) fileType = 'pdf';
+        else if (textExts.includes(ext)) fileType = 'text';
 
+        console.log('📋 File type:', fileType);
+
+        // Set current file
         currentFile = {
             url: fileUrl,
-            filename: filename,
+            filename: fileName,
             type: fileType,
             pdfDoc: null,
             currentPage: 1,
@@ -999,41 +1053,322 @@
             zoom: 1
         };
 
+        // Show preview modal
         showPreview();
     }
-    // Fungsi showPreview tetap sama, tapi pastikan downloadBtn menggunakan URL yang benar
+
+    /**
+     * Tampilkan pilihan viewer untuk Office files
+     */
+    function showOfficeViewerOptions(fileUrl, fileName, ext) {
+        const isLocalhost = window.location.hostname === 'localhost' ||
+            window.location.hostname === '127.0.0.1';
+
+        let warningMsg = '';
+        if (isLocalhost) {
+            warningMsg = `
+            <div class="alert alert-warning" role="alert" style="margin-top: 15px; font-size: 13px;">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <strong>Note:</strong> Microsoft Office Viewer tidak berfungsi di localhost. 
+                Gunakan Download untuk membuka file.
+            </div>
+        `;
+        }
+
+        // Escape URL dan fileName untuk digunakan di HTML
+        const escapedUrl = escapeHtmlSimple(fileUrl);
+        const escapedName = escapeHtmlSimple(fileName);
+
+        Swal.fire({
+            title: '<i class="bi bi-eye-fill"></i> Choose Viewer',
+            html: `
+            <div style="text-align: left; padding: 10px 20px;">
+                <p style="margin-bottom: 20px; color: #6b7280; font-size: 14px;">
+                    <i class="bi bi-file-earmark-text me-2"></i>
+                    <strong>${escapedName}</strong>
+                </p>
+                
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <!-- Microsoft Office Viewer -->
+                    <div class="office-viewer-option" data-action="microsoft" data-url="${escapedUrl}" data-name="${escapedName}" style="
+                        border: 2px solid #0078d4;
+                        border-radius: 10px;
+                        padding: 16px;
+                        cursor: pointer;
+                        transition: all 0.3s;
+                        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+                    ">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="font-size: 36px;">🪟</div>
+                            <div style="flex: 1; text-align: left;">
+                                <h6 style="margin: 0; color: #0078d4; font-weight: 600; font-size: 15px;">
+                                    Microsoft Office Viewer
+                                </h6>
+                                <p style="margin: 3px 0 0 0; font-size: 12px; color: #6b7280;">
+                                    Tampilan seperti Office asli (online)
+                                </p>
+                            </div>
+                            <i class="bi bi-chevron-right" style="font-size: 20px; color: #0078d4;"></i>
+                        </div>
+                    </div>
+                    
+                    <!-- Download -->
+                    <div class="office-viewer-option" data-action="download" data-url="${escapedUrl}" data-name="${escapedName}" style="
+                        border: 2px solid #6b7280;
+                        border-radius: 10px;
+                        padding: 16px;
+                        cursor: pointer;
+                        transition: all 0.3s;
+                        background: #f9fafb;
+                    ">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="font-size: 36px;">💾</div>
+                            <div style="flex: 1; text-align: left;">
+                                <h6 style="margin: 0; color: #374151; font-weight: 600; font-size: 15px;">
+                                    Download File
+                                </h6>
+                                <p style="margin: 3px 0 0 0; font-size: 12px; color: #6b7280;">
+                                    Download dan buka dengan aplikasi lokal
+                                </p>
+                            </div>
+                            <i class="bi bi-chevron-right" style="font-size: 20px; color: #6b7280;"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                ${warningMsg}
+            </div>
+            
+            <style>
+                .office-viewer-option:hover {
+                    transform: translateX(5px);
+                    box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+                }
+                .office-viewer-option:active {
+                    transform: scale(0.98);
+                }
+            </style>
+        `,
+            width: '500px',
+            showConfirmButton: false,
+            showCloseButton: true,
+            allowOutsideClick: true,
+            didOpen: () => {
+                // Attach event listeners ke options
+                document.querySelectorAll('.office-viewer-option').forEach(option => {
+                    option.addEventListener('click', function () {
+                        const action = this.getAttribute('data-action');
+                        const url = this.getAttribute('data-url');
+                        const name = this.getAttribute('data-name');
+
+                        Swal.close();
+                        selectOfficeViewer(action, url, name);
+                    });
+                });
+            }
+        });
+    }
+
+    /**
+     * Handle pilihan viewer Office
+     */
+    function selectOfficeViewer(viewerType, fileUrl, fileName) {
+        console.log('📌 Selected viewer:', viewerType);
+        console.log('📄 File URL:', fileUrl);
+
+        if (viewerType === 'microsoft') {
+            openWithMicrosoftViewer(fileUrl, fileName);
+        } else if (viewerType === 'download') {
+            window.location.href = fileUrl;
+        }
+    }
+
+    /**
+     * Buka file dengan Microsoft Office Online Viewer
+     */
+    function openWithMicrosoftViewer(fileUrl, fileName) {
+        // Encode URL untuk Office Viewer
+        // const viewUrl = fileUrl.replace('/download/', '/view/');
+        // Untuk Office Viewer, gunakan public-view
+        const viewUrl = fileUrl.replace('/view/', '/public-view/');
+        const encodedUrl = encodeURIComponent(viewUrl);
+        const officeViewerUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodedUrl}`;
+
+        console.log('🪟 Opening with Microsoft Office Viewer');
+        console.log('📍 Original URL:', viewUrl);
+        console.log('🔗 Viewer URL:', officeViewerUrl);
+
+        // Cek apakah ada modal preview
+        const modal = document.getElementById('previewModal');
+
+        if (modal) {
+            // Gunakan modal
+            const content = document.getElementById('previewContent');
+            const footer = document.getElementById('previewFooter');
+            const downloadBtn = document.getElementById('downloadBtn');
+
+            if (content) {
+                // Set filename dan download button
+                const filenameEl = document.getElementById('previewFilename');
+                if (filenameEl) {
+                    filenameEl.textContent = fileName;
+                }
+
+                if (downloadBtn) {
+                    downloadBtn.href = fileUrl;
+                    downloadBtn.download = fileName;
+                }
+
+                if (footer) {
+                    footer.style.display = 'none';
+                }
+
+                // Show loading
+                content.innerHTML = `
+                <div class="loading-spinner" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 16px;">
+                    <div style="font-size: 64px;">🪟</div>
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <span style="margin-top: 10px;">Loading Microsoft Office Viewer...</span>
+                    <p style="margin-top: 10px; font-size: 13px; color: #6b7280;">
+                        Jika loading terlalu lama, tekan ESC dan download file
+                    </p>
+                </div>
+            `;
+
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+
+                // Load iframe dengan delay
+                setTimeout(() => {
+                    content.innerHTML = `
+                    <iframe 
+                        src="${officeViewerUrl}" 
+                        style="width: 100%; height: 100%; border: none;"
+                        frameborder="0"
+                        title="Microsoft Office Viewer"
+                        onload="console.log('✅ Office Viewer loaded successfully')">
+                    </iframe>
+                `;
+                }, 800);
+            }
+        } else {
+            // Tidak ada modal, buka di tab baru
+            window.open(officeViewerUrl, '_blank');
+        }
+    }
+
+    /**
+     * Close preview modal
+     */
+    function closePreview() {
+        const modal = document.getElementById('previewModal');
+        if (modal) {
+            modal.classList.remove('active');
+        }
+        document.body.style.overflow = 'auto';
+
+        if (currentFile.pdfDoc) {
+            currentFile.pdfDoc.destroy();
+            currentFile.pdfDoc = null;
+        }
+    }
+
+    /**
+     * Helper function untuk escape HTML sederhana
+     */
+    function escapeHtmlSimple(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
     function showPreview() {
         const modal = document.getElementById('previewModal');
         const content = document.getElementById('previewContent');
         const footer = document.getElementById('previewFooter');
+
         const downloadBtn = document.getElementById('downloadBtn');
 
         document.getElementById('previewFilename').textContent = currentFile.filename;
-        downloadBtn.href = currentFile.url;
+
+        downloadBtn.href = currentFile.fileId;
         downloadBtn.download = currentFile.filename;
+
         content.innerHTML = '';
 
+        // Route berdasarkan file type
         if (currentFile.type === 'image') {
             footer.style.display = 'none';
             const img = document.createElement('img');
-            img.src = currentFile.url;
+            img.src = currentFile.fileId;
             img.className = 'preview-image';
             img.onerror = () => {
                 content.innerHTML = '<div class="text-danger text-center"><i class="bi bi-exclamation-circle" style="font-size: 48px;"></i><p class="mt-2">Error loading image</p></div>';
             };
             content.appendChild(img);
-        } else if (currentFile.type === 'pdf') {
+        }
+        else if (currentFile.type === 'pdf') {
             footer.style.display = 'flex';
+            // previewPDF(currentFile.fileId, currentFile.filename);
             loadPDF();
-        } else {
-            content.innerHTML = '<div class="text-warning text-center"><i class="bi bi-file-earmark" style="font-size: 48px;"></i><p class="mt-2">File type not supported for preview</p></div>';
+        }
+        else if (currentFile.type === 'text') {
             footer.style.display = 'none';
+            loadText();
+        }
+        else {
+            footer.style.display = 'none';
+            content.innerHTML = `
+            <div class="text-center" style="padding: 60px 20px;">
+                <i class="bi bi-file-earmark" style="font-size: 64px; color: #6b7280;"></i>
+                <p class="mt-3" style="color: #374151; font-size: 16px; font-weight: 500;">Preview tidak tersedia</p>
+                <p style="color: #9ca3af; font-size: 14px; margin-bottom: 20px;">${currentFile.filename}</p>
+                <button class="btn btn-primary" onclick="window.location.href='${currentFile.fileId}'">
+                    <i class="bi bi-download"></i> Download File
+                </button>
+            </div>
+        `;
         }
 
         modal.classList.add('active');
         document.body.style.overflow = 'hidden';
     }
 
+    // Function untuk load Text
+    async function loadText() {
+        const content = document.getElementById('previewContent');
+        content.innerHTML = '<div class="loading-spinner"><div class="spinner-border text-primary" role="status"></div><span>Loading Text...</span></div>';
+
+        try {
+            const response = await fetch(currentFile.fileId);
+            const text = await response.text();
+
+            content.innerHTML = `
+            <pre style="
+                max-height: calc(80vh - 120px); 
+                overflow: auto; 
+                text-align: left; 
+                padding: 20px 30px; 
+                background: #f9fafb; 
+                margin: 0;
+                font-size: 13px; 
+                line-height: 1.6;
+                font-family: 'Courier New', monospace;
+                color: #374151;
+                white-space: pre-wrap;
+                word-wrap: break-word;
+            ">${escapeHtml(text)}</pre>
+        `;
+        } catch (error) {
+            console.error('Text loading error:', error);
+            content.innerHTML = `
+            <div class="text-danger text-center" style="padding: 40px;">
+                <i class="bi bi-exclamation-circle" style="font-size: 48px;"></i>
+                <p class="mt-2">Error loading text file</p>
+            </div>
+        `;
+        }
+    }
     // loadPDF tetap sama
     function loadPDF() {
         const content = document.getElementById('previewContent');
@@ -1141,23 +1476,25 @@
         }
     }
 
-    function closePreview() {
-        document.getElementById('previewModal').classList.remove('active');
-        document.body.style.overflow = 'auto';
-        currentFile.pdfDoc = null;
-    }
-
     function printFile() {
         if (currentFile.type === 'image') {
-            const printWindow = window.open(currentFile.url);
+            const printWindow = window.open(currentFile.fileId);
             printWindow.addEventListener('load', () => {
                 printWindow.print();
             });
         } else if (currentFile.type === 'pdf') {
-            window.open(currentFile.url);
+            window.open(currentFile.fileId);
         }
     }
-
+    // Keyboard shortcut untuk close preview
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            const modal = document.getElementById('previewModal');
+            if (modal && modal.classList.contains('active')) {
+                closePreview();
+            }
+        }
+    });
     // UNTUK GRID VIEW DAN LIST VIEW
     const gridView = document.getElementById('gridView');
     const listView = document.getElementById('listView');
@@ -1241,7 +1578,6 @@
             itemNameEl.select();
         }, 100);
     }
-
 </script>
 <script>
     document.getElementById('uploadZipFile').addEventListener('change', function (e) {
@@ -1782,16 +2118,20 @@
     /**
      * Dapatkan file preview HTML
      */
+    // Function existing Anda (untuk thumbnail)
     function getFilePreview(isImage, isPDF, fileUrl, file, ext) {
         if (isImage) {
             return `<img src="${fileUrl}" alt="${escapeHtml(file.name)}" 
-                     class="img-fluid rounded-top" 
-                     style="max-height: 150px; object-fit: cover;">`;
+                 class="img-fluid rounded-top" 
+                 style="max-height: 150px; object-fit: cover; cursor: pointer;"
+                 onclick="previewFile(${file.id}, '${escapeHtml(file.name)}', '${file.file_type || ext}')">`;
         } else if (isPDF) {
-            return `<i class="bi bi-filetype-pdf" style="font-size: 48px; color: #dc3545;"></i>`;
+            return `<i class="bi bi-filetype-pdf" style="font-size: 48px; color: #dc3545; cursor: pointer;"
+                   onclick="previewFile(${fileUrl}, '${escapeHtml(file.name)}', '${file.file_type || ext}')"></i>`;
         } else {
             const icon = getFileIcon(ext);
-            return `<i class="${icon}" style="font-size: 48px;"></i>`;
+            return `<i class="${icon}" style="font-size: 48px; cursor: pointer;"
+                   onclick="previewFile(${file.id}, '${escapeHtml(file.name)}', '${file.file_type || ext}')"></i>`;
         }
     }
 
@@ -1819,6 +2159,278 @@
         return iconMap[ext] || 'bi bi-file-earmark-fill text-primary';
     }
 
+
+    // ============================================
+    // PREVIEW FUNCTIONS
+    // ============================================
+
+    // Preview DOCX
+    async function previewDocx(fileId, fileName) {
+        try {
+            Swal.fire({
+                title: 'Loading...',
+                html: '<div style="font-size: 48px; margin: 20px;">📄</div><p>Membuka dokumen...</p>',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            const fileUrl = '<?= base_url('drive/download/') ?>' + fileId;
+            const response = await fetch(fileUrl);
+            const arrayBuffer = await response.arrayBuffer();
+
+            const result = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
+            const html = result.value;
+
+            Swal.fire({
+                title: `<i class="bi bi-file-word text-primary"></i> ${fileName}`,
+                html: `
+                <div style="max-height: 70vh; overflow-y: auto; text-align: left; padding: 30px; background: white; border: 1px solid #e5e7eb; border-radius: 8px;">
+                    ${html}
+                </div>
+            `,
+                width: '90%',
+                showCloseButton: true,
+                showCancelButton: true,
+                confirmButtonText: '<i class="bi bi-download"></i> Download',
+                cancelButtonText: '<i class="bi bi-x-lg"></i> Close',
+                confirmButtonColor: '#667eea',
+                cancelButtonColor: '#6b7280',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = fileUrl;
+                }
+            });
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'Gagal membuka dokumen: ' + error.message,
+                confirmButtonColor: '#ef4444'
+            });
+        }
+    }
+
+    // Preview Excel/CSV
+    async function previewExcel(fileId, fileName) {
+        try {
+            Swal.fire({
+                title: 'Loading...',
+                html: '<div style="font-size: 48px; margin: 20px;">📊</div><p>Membuka spreadsheet...</p>',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            const fileUrl = '<?= base_url('drive/download/') ?>' + fileId;
+            const response = await fetch(fileUrl);
+            const arrayBuffer = await response.arrayBuffer();
+
+            const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+            const sheetNames = workbook.SheetNames;
+
+            let htmlTables = '';
+
+            // Multiple sheets tabs
+            if (sheetNames.length > 1) {
+                htmlTables += '<div class="excel-tabs" style="margin-bottom: 15px; border-bottom: 2px solid #e5e7eb;">';
+                sheetNames.forEach((sheetName, index) => {
+                    htmlTables += `
+                    <button class="excel-tab-btn ${index === 0 ? 'active' : ''}" 
+                            onclick="showExcelSheet(${index})"
+                            style="padding: 10px 20px; border: none; background: ${index === 0 ? '#10b981' : '#f3f4f6'}; color: ${index === 0 ? 'white' : '#6b7280'}; cursor: pointer; border-radius: 8px 8px 0 0; margin-right: 5px; font-weight: 500; transition: all 0.2s;">
+                        📊 ${sheetName}
+                    </button>
+                `;
+                });
+                htmlTables += '</div>';
+            }
+
+            // Convert sheets to HTML
+            sheetNames.forEach((sheetName, index) => {
+                const worksheet = workbook.Sheets[sheetName];
+                const htmlTable = XLSX.utils.sheet_to_html(worksheet);
+
+                htmlTables += `
+                <div class="excel-sheet" id="sheet-${index}" style="display: ${index === 0 ? 'block' : 'none'};">
+                    ${htmlTable}
+                </div>
+            `;
+            });
+
+            Swal.fire({
+                title: `<i class="bi bi-file-excel text-success"></i> ${fileName}`,
+                html: `
+                <div style="max-height: 70vh; overflow: auto; background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px;">
+                    ${htmlTables}
+                </div>
+                <style>
+                    .swal2-html-container table {
+                        border-collapse: collapse;
+                        width: 100%;
+                        font-size: 13px;
+                    }
+                    .swal2-html-container table td,
+                    .swal2-html-container table th {
+                        border: 1px solid #d1d5db;
+                        padding: 8px 12px;
+                        text-align: left;
+                        min-width: 80px;
+                    }
+                    .swal2-html-container table th {
+                        background: #f3f4f6;
+                        font-weight: 600;
+                        color: #374151;
+                        position: sticky;
+                        top: 0;
+                        z-index: 10;
+                    }
+                    .swal2-html-container table tr:nth-child(even) {
+                        background: #f9fafb;
+                    }
+                    .swal2-html-container table tr:hover {
+                        background: #ecfdf5;
+                    }
+                    .excel-tab-btn:hover {
+                        transform: translateY(-2px);
+                    }
+                    .excel-tab-btn.active {
+                        background: #10b981 !important;
+                        color: white !important;
+                    }
+                </style>
+            `,
+                width: '95%',
+                showCloseButton: true,
+                showCancelButton: true,
+                confirmButtonText: '<i class="bi bi-download"></i> Download',
+                cancelButtonText: '<i class="bi bi-x-lg"></i> Close',
+                confirmButtonColor: '#10b981',
+                cancelButtonColor: '#6b7280',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = fileUrl;
+                }
+            });
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'Gagal membuka spreadsheet: ' + error.message,
+                confirmButtonColor: '#ef4444'
+            });
+        }
+    }
+
+    // Switch Excel sheets
+    window.showExcelSheet = function (sheetIndex) {
+        document.querySelectorAll('.excel-sheet').forEach(sheet => {
+            sheet.style.display = 'none';
+        });
+
+        document.getElementById('sheet-' + sheetIndex).style.display = 'block';
+
+        document.querySelectorAll('.excel-tab-btn').forEach((btn, index) => {
+            if (index === sheetIndex) {
+                btn.classList.add('active');
+                btn.style.background = '#10b981';
+                btn.style.color = 'white';
+            } else {
+                btn.classList.remove('active');
+                btn.style.background = '#f3f4f6';
+                btn.style.color = '#6b7280';
+            }
+        });
+    }
+
+    // Preview PDF
+    function previewPDF(fileUrl, fileName) {
+        Swal.fire({
+            title: `<i class="bi bi-file-pdf text-danger"></i> ${fileName}`,
+            html: `
+            <iframe src="${fileUrl}" 
+                    style="width: 100%; height: 70vh; border: 1px solid #e5e7eb; border-radius: 8px;"
+                    frameborder="0">
+            </iframe>
+        `,
+            width: '95%',
+            showCloseButton: true,
+            showCancelButton: true,
+            confirmButtonText: '<i class="bi bi-download"></i> Download',
+            cancelButtonText: 'Close',
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6b7280',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = fileUrl;
+            }
+        });
+    }
+
+    // Preview Image
+    function previewImage(fileUrl, fileName) {
+        Swal.fire({
+            title: fileName,
+            imageUrl: fileUrl,
+            imageAlt: fileName,
+            width: '90%',
+            showCloseButton: true,
+            showCancelButton: true,
+            confirmButtonText: '<i class="bi bi-download"></i> Download',
+            cancelButtonText: 'Close',
+            confirmButtonColor: '#667eea',
+            cancelButtonColor: '#6b7280',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = fileUrl;
+            }
+        });
+    }
+
+    // Preview Text
+    async function previewText(fileUrl, fileName) {
+        try {
+            const response = await fetch(fileUrl);
+            const text = await response.text();
+
+            Swal.fire({
+                title: `<i class="bi bi-file-text"></i> ${fileName}`,
+                html: `
+                <pre style="max-height: 70vh; overflow: auto; text-align: left; padding: 20px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 13px; line-height: 1.6;">${escapeHtml(text)}</pre>
+            `,
+                width: '90%',
+                showCloseButton: true,
+                showCancelButton: true,
+                confirmButtonText: '<i class="bi bi-download"></i> Download',
+                cancelButtonText: 'Close',
+                confirmButtonColor: '#667eea',
+                cancelButtonColor: '#6b7280',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = fileUrl;
+                }
+            });
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'Gagal membuka file text',
+                confirmButtonColor: '#ef4444'
+            });
+        }
+    }
+
+    // Escape HTML untuk keamanan
+    function escapeHtml(text) {
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text.replace(/[&<>"']/g, m => map[m]);
+    }
     /**
      * Highlight search term dalam hasil
      */
@@ -1875,43 +2487,94 @@
      * Handler untuk delete file
      */
     async function deleteFileHandler() {
-        if (!confirm('Hapus file ini?')) return;
-        const id = this.getAttribute('data-del-file');
-        try {
-            const res = await fetch(`<?= base_url('drive/moveToTrash/') ?>${id}`, {
-                method: 'post'
-            });
-            if (res.ok) {
-                location.reload();
-            } else {
-                alert('Gagal menghapus file');
+        swal.fire({
+            title: 'Hapus file ini?',
+            text: "File yang dihapus akan dipindahkan ke tempat sampah.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Ya, hapus!',
+            cancelButtonText: 'Batal'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                const id = this.getAttribute('data-del-file');
+                try {
+                    const res = await fetch(`<?= base_url('drive/moveToTrash/') ?>${id}`, {
+                        method: 'post'
+                    });
+                    if (res.ok) {
+                        swal.fire(
+                            'Dihapus!',
+                            'File telah dipindahkan ke tempat sampah.',
+                            'success'
+                        ).then(() => {
+                            location.reload();
+                        });
+                    } else {
+                        swal.fire(
+                            'Gagal!',
+                            'Gagal menghapus file.',
+                            'error'
+                        );
+                    }
+                } catch (error) {
+                    console.error('Delete error:', error);
+                    swal.fire(
+                        'Error!',
+                        'Terjadi kesalahan.',
+                        'error'
+                    );
+                }
             }
-        } catch (error) {
-            console.error('Delete error:', error);
-            alert('Terjadi kesalahan');
-        }
+        });
     }
 
     /**
      * Handler untuk delete folder
      */
     async function deleteFolderHandler() {
-        if (!confirm('Hapus folder ini?')) return;
-        const id = this.getAttribute('data-del-folder');
-        try {
-            const res = await fetch(`<?= base_url('drive/moveToTrashFolder/') ?>${id}`, {
-                method: 'post'
-            });
-            if (res.ok) {
-                location.reload();
-            } else {
-                alert('Gagal menghapus folder');
+        swal.fire({
+            title: 'Hapus folder ini?',
+            text: "Folder yang dihapus akan dipindahkan ke tempat sampah beserta isinya.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Ya, hapus!',
+            cancelButtonText: 'Batal'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                const id = this.getAttribute('data-del-folder');
+                try {
+                    const res = await fetch(`<?= base_url('drive/moveToTrashFolder/') ?>${id}`, {
+                        method: 'post'
+                    });
+                    if (res.ok) {
+                        swal.fire(
+                            'Dihapus!',
+                            'Folder telah dipindahkan ke tempat sampah.',
+                            'success'
+                        ).then(() => {
+                            location.reload();
+                        });
+                    } else {
+                        swal.fire(
+                            'Gagal!',
+                            'Gagal menghapus folder.',
+                            'error'
+                        );
+                    }
+                } catch (error) {
+                    console.error('Delete error:', error);
+                    swal.fire(
+                        'Error!',
+                        'Terjadi kesalahan.',
+                        'error'
+                    );
+                }
             }
-        } catch (error) {
-            console.error('Delete error:', error);
-            alert('Terjadi kesalahan');
-        }
+        });
     }
 
-</script>
-<?= $this->endSection() ?>
+</script><?= $this->endSection() ?>
