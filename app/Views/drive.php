@@ -1149,7 +1149,13 @@
         // Encode URL untuk Office Viewer
         // const viewUrl = fileUrl.replace('/download/', '/view/');
         // Untuk Office Viewer, gunakan public-view
-        const viewUrl = fileUrl.replace('/view/', '/public-view/');
+        const viewUrl;
+
+        if (fileUrl.includes('/download/')) {
+            viewUrl = = fileUrl.replace('/download/', '/public-view/');
+        } else if (fileUrl.includes('/view/')) {
+            viewUrl = fileUrl.replace('/view/', '/public-view/');
+        }
         const encodedUrl = encodeURIComponent(viewUrl);
         const officeViewerUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodedUrl}`;
 
