@@ -16,7 +16,7 @@
 
     <div class="footer-left text-center text-sm-start">
       <strong>
-        Copyright &copy; 2024
+        Copyright &copy; 2025
         <a href="https://newarmada.biz/" target="_blank">IT - HRD Department</a>.
       </strong>
       PT. Mekar Armada Jaya |
@@ -60,5 +60,4 @@
     text-align: center;
   }
 }
-
 </style>

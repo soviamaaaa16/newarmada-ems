@@ -44,6 +44,7 @@ class DriveController extends BaseController
             'files' => $this->files->listInFolder($parentId),
             'searchQuery' => null,
             'isSearch' => false,
+            'currentFolderId' => (string) $folderId,
         ];
 
         return view('drive', $data);

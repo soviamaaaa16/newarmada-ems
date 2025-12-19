@@ -31,9 +31,9 @@
 
     <?= $this->include('layouts/navbar') ?>
 
-    <div class="d-flex app-wrapper">
+    <div class="app-wrapper">
 
-        <aside class="bg-light border-end d-none d-md-block">
+        <aside id="sidebar" class="bg-light border-end d-none d-md-block">
             <?= $this->include('layouts/sidebar') ?>
         </aside>
 

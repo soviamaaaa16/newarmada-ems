@@ -88,6 +88,7 @@
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     const currentFolderId = "<?= $currentFolderId ?? '' ?>";
+    console.log("PHP currentFolderId:", "<?= $currentFolderId ?? 'NULL' ?>");
 
     fetch("<?= base_url('drive/getFolderTree') ?>")
       .then(res => res.json())
@@ -98,38 +99,84 @@
         enableTreeActions();
       });
 
-    function renderTree(nodes, activeId) {
-        let html = "<ul>";
+    // function renderTree(nodes, activeId) {
+    //     let html = "<ul>";
  
-        nodes.forEach(n => {
-            const hasChildren = n.children && n.children.length > 0;
-            const isActive = activeId == n.id;
+    //     nodes.forEach(n => {
+    //         const hasChildren = n.children && n.children.length > 0;
+    //         const isActive = activeId == n.id;
+
+    //     html += `
+    //             <li>
+    //                 <div class="folder-node ${isActive ? 'active' : ''}" data-id="${n.id}">
+    //                     ${hasChildren ? `<span class="tree-toggle ${isActive ? 'open' : ''}"></span>` : `<span style="width:12px"></span>`}
+    //                     <i class="bi bi-folder"></i>
+    //                     <span>${n.name}</span>
+    //                 </div>
+
+    //                 ${hasChildren ? `
+    //                     <div class="tree-children" style="display:${isActive ? 'block' : 'none'}">
+    //                         ${renderTree(n.children, activeId)}
+    //                     </div>` : ""}
+    //             </li>
+    //         `;
+    //   });
+
+    //   html += "</ul>";
+    //   return html;
+    // }
+
+    function renderTree(nodes, activeId) {
+      let html = "<ul>";
+
+      nodes.forEach(n => {
+        const hasChildren = n.children && n.children.length > 0;
+        const isActive = activeId === n.id.toString();
+        const hasActiveDescendant = hasActiveChild(n, activeId);
+      
+        const shouldOpen = isActive || hasActiveDescendant;
+
+        console.log("ACTIVE:", activeId, typeof activeId);
+        console.log("NODE:", n.id, typeof n.id);
 
         html += `
-                <li>
-                    <div class="folder-node ${isActive ? 'active' : ''}" data-id="${n.id}">
-                        ${hasChildren ? `<span class="tree-toggle ${isActive ? 'open' : ''}"></span>` : `<span style="width:12px"></span>`}
-                        <i class="bi bi-folder"></i>
-                        <span>${n.name}</span>
-                    </div>
-
-                    ${hasChildren ? `
-                        <div class="tree-children" style="display:${isActive ? 'block' : 'none'}">
-                            ${renderTree(n.children, activeId)}
-                        </div>` : ""}
-                </li>
-            `;
+          <li>
+            <div class="folder-node ${isActive ? 'active' : ''}" data-id="${n.id}">
+              ${hasChildren 
+                ? `<span class="tree-toggle ${shouldOpen ? 'open' : ''}"></span>` 
+                : `<span style="width:12px"></span>`}
+              <i class="bi bi-folder"></i>
+              <span>${n.name}</span>
+            </div>
+      
+            ${hasChildren ? `
+              <div class="tree-children" style="display:${shouldOpen ? 'block' : 'none'}">
+                ${renderTree(n.children, activeId)}
+              </div>
+            ` : ""}
+          </li>
+        `;
       });
-
+    
       html += "</ul>";
       return html;
-    }
+    } 
+
+    setTimeout(() => {
+      document.querySelector('.folder-node.active')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
+    }, 200);
+
+
 
     function enableTreeActions() {
       document.querySelectorAll(".tree-toggle").forEach(toggle => {
         toggle.addEventListener("click", function (e) {
           e.stopPropagation();
           const children = this.parentElement.nextElementSibling;
+          if (!children) return;
 
           if (children.style.display === "none") {
             children.style.display = "block";
@@ -148,6 +195,16 @@
         });
       });
     }
+
+    function hasActiveChild(node, activeId) {
+      if (!node.children) return false;
+
+      return node.children.some(child => {
+        return child.id.toString() === activeId
+            || hasActiveChild(child, activeId);
+      });
+    }
+
   });
 </script>
 
@@ -201,12 +258,12 @@
     margin-left: 12px;
   }
 
-#sidebar {
-  overflow-y: auto;
-  overflow-x: hidden;
-  width: 300px;
-  flex-shrink: 0
-}
+  #sidebar {
+    overflow-y: auto;
+    overflow-x: hidden;
+    width: 300px;
+    flex-shrink: 0;
+  }
 
   #folder-tree span {
     white-space: nowrap;
@@ -216,9 +273,9 @@
     display: inline-block;
   }
 
-#folder-tree span {
-  display: inline-block;
-  padding-right: 10px;
-}
+  #folder-tree span {
+    display: inline-block;
+    padding-right: 10px;
+  }
 
 </style>
