@@ -172,7 +172,6 @@
             flex: 1.2;
             padding: 50px;
             color: white;
-            /* background: linear-gradient(135deg, #a45deb, #ff8b49);  */
 
             background:
                 linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
@@ -303,6 +302,47 @@
                 height: 45px;
             }
         }
+
+        /* .event-countdown {
+            font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+            font-weight: 400;
+            font-size: clamp(14px, 1.6vw, 16px);
+            color: rgba(255, 255, 255, 0.92);
+            line-height: 1.7;
+            text-align: center;
+        } */
+
+        #event-countdown {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          margin-top: 20px;
+        }
+
+        .time-box {
+          text-align: center;
+          min-width: 70px;
+        }
+
+        .time-box span {
+          font-size: 32px;
+          font-weight: 600;
+          letter-spacing: 2px;
+        }
+
+        .time-box small {
+          display: block;
+          font-size: 12px;
+          color: #ffffffff;
+          margin-top: 4px;
+        }
+
+        .colon {
+          font-size: 28px;
+          font-weight: 500;
+          margin-top: -10px;
+        }
     </style>
 </head>
 
@@ -314,6 +354,27 @@
               Sistem manajemen dokumen ISO 14001:2015 PT Mekar Armada Jaya — Plant Tambun.
               Silakan login ke akun Anda untuk melanjutkan.
             </p>
+            <div id="event-countdown">
+                <div class="time-box">
+                  <span id="days">00</span>
+                  <small>Days</small>
+                </div>
+                <span class="colon">:</span>
+                <div class="time-box">
+                  <span id="hours">00</span>
+                  <small>Hours</small>
+                </div>
+                <span class="colon">:</span>
+                <div class="time-box">
+                  <span id="minutes">00</span>
+                  <small>Minutes</small>
+                </div>
+                <span class="colon">:</span>
+                <div class="time-box">
+                  <span id="seconds">00</span>
+                  <small>Seconds</small>
+                </div>
+            </div>
         </div>
 
         <div class="right-box">
@@ -382,3 +443,36 @@
 </body>
 
 </html>
+
+<script>
+    var countDownDate = new Date("Jan 28, 2026 15:37:25").getTime();
+
+    var x = setInterval(function () {
+      var now = new Date().getTime();
+      var distance = countDownDate - now;
+
+      var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      var hours = Math.floor(
+        (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+      );
+      var minutes = Math.floor(
+        (distance % (1000 * 60 * 60)) / (1000 * 60)
+      );
+      var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      document.getElementById("days").textContent =
+        String(days).padStart(2, "0");
+      document.getElementById("hours").textContent =
+        String(hours).padStart(2, "0");
+      document.getElementById("minutes").textContent =
+        String(minutes).padStart(2, "0");
+      document.getElementById("seconds").textContent =
+        String(seconds).padStart(2, "0");
+
+      if (distance < 0) {
+        clearInterval(x);
+        document.querySelector(".iso-countdown").innerHTML =
+          "<strong>EVENT SUDAH DIMULAI</strong>";
+      }
+    }, 1000);
+</script>

@@ -28,7 +28,6 @@
 
 <body class="app-root">
 
-
     <?= $this->include('layouts/navbar') ?>
 
     <div class="app-wrapper">
@@ -37,8 +36,13 @@
             <?= $this->include('layouts/sidebar') ?>
         </aside>
 
+        <?php
+            $isEmptyState = empty($folders) && empty($files);
+        ?>
+
+
         <!-- CONTENT -->
-        <main class="flex-fill">
+        <main class="flex-fill main-content <?= $isEmptyState ? 'is-empty' : '' ?>">
             <?= $this->renderSection('content') ?>
         </main>
 

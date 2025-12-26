@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= esc($title) ?></title>
     <style>
-        * {
+        /* * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -216,135 +216,397 @@
             display: flex;
             gap: 5px;
             flex-wrap: wrap;
-        }
+        } */
+
+    /* =====================
+        ADMIN BASE
+    ===================== */
+
+    body.page-admin {
+        background: #f4f6f9;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .admin-wrapper {
+        min-height: 100vh;
+    }
+
+    /* =====================
+       ADMIN NAVBAR
+    ===================== */
+
+    .admin-navbar {
+        background: linear-gradient(90deg, #1e3a5f, #2b4f7a);
+        color: #fff;
+        padding: 14px 32px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 2px 8px rgba(0,0,0,.12);
+    }
+
+    .admin-navbar h1 {
+        font-size: 20px;
+        margin: 0;
+    }
+
+    .admin-nav-actions a {
+        color: #e5e7eb;
+        margin-left: 16px;
+        text-decoration: none;
+        font-size: 14px;
+    }
+
+    .admin-nav-actions a:hover {
+        color: #fff;
+    }
+
+    /* =====================
+       ADMIN CONTENT
+    ===================== */
+
+    .admin-container {
+        max-width: 1400px;
+        margin: 30px auto;
+        padding: 0 20px;
+    }
+
+    .card {
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 8px 20px rgba(0,0,0,.06);
+        overflow: hidden;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    thead th {
+        background: #f8fafc;
+        text-align: left;
+        padding: 14px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    tbody td {
+        padding: 14px;
+        border-top: 1px solid #eee;
+        font-size: 14px;
+    }
+
+    tbody tr:hover {
+        background: #f9fafb;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .badge-active {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .badge-banned {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .badge-admin {
+        background: #e0e7ff;
+        color: #3730a3;
+    }
+
+    .badge-user {
+        background: #e5e7eb;
+        color: #374151;
+    }
+
+    .table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+
+    .table-header h2 {
+        margin: 0;
+        font-size: 20px;
+    }
+
+    .table-actions {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .table-actions input {
+        padding: 8px 10px;
+        border-radius: 6px;
+        border: 1px solid #ddd;
+    }
+
+    .actions {
+        display: flex;
+        gap: 6px;
+    }
+    
+    .actions .btn {
+        width: 34px;
+        height: 34px;
+        padding: 0;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+    }
+
+    .admin-navbar h1 {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .admin-navbar a {
+        color: #e8f1ff;
+        text-decoration: none;
+        margin-left: 16px;
+        font-size: 14px;
+    }
+
+    .admin-navbar a:hover {
+        text-decoration: underline;
+    }
+
+    .table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 10px 0 20px;
+    }
+
+    .table-header h2 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 600;
+    }
+
+    .table-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .table-actions input {
+        padding: 8px 10px;
+        border-radius: 6px;
+        border: 1px solid #d0d7e2;
+        font-size: 13px;
+    }
+
+    .actions {
+        display: flex;
+        gap: 6px;
+    }
+
+    .actions .btn {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        background: #f1f5f9;
+        cursor: pointer;
+    }
+
+    .actions .btn:hover {
+        background: #e2e8f0;
+    }
+
+    .card {
+        background: #fff;
+        border-radius: 14px;
+        box-shadow: 0 6px 18px rgba(0,0,0,.06);
+        padding: 10px 0;
+    }
+    
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    thead th {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+        padding: 14px 18px;
+    }
+    
+    tbody td {
+        padding: 14px 18px;
+        font-size: 14px;
+        border-top: 1px solid #eef1f5;
+    }
     </style>
 </head>
 
-<body>
-    <div class="navbar">
-        <h1>👥 User Management</h1>
-        <div>
-            <a href="<?= base_url('drive') ?>">← Back to Dashboard</a>
-            <a href="<?= base_url('logout') ?>">Logout</a>
-        </div>
-    </div>
-
-    <div class="container">
-        <?php if (session('message')): ?>
-            <div class="alert alert-success">
-                <?= session('message') ?>
-            </div>
-        <?php endif; ?>
-
-        <?php if (session('error')): ?>
-            <div class="alert alert-danger">
-                <?= session('error') ?>
-            </div>
-        <?php endif; ?>
-
-        <div class="header">
-            <h2>All Users (<?= count($users) ?>)</h2>
-            <div style="display: flex; gap: 10px;">
-                <form action="<?= base_url('admin/users/search') ?>" method="get" class="search-box">
-                    <input type="text" name="q" placeholder="Search by username or email..."
-                        value="<?= esc($query ?? '') ?>">
-                    <button type="submit" class="btn btn-primary">Search</button>
-                </form>
-                <a href="<?= base_url('admin/users/create') ?>" class="btn btn-success">+ Add New User</a>
+<body class="page-admin">
+    <div class="admin-wrapper">
+        <div class="admin-navbar">
+            <h1>👥 User Management</h1>
+            <div>
+                <a href="<?= base_url('drive') ?>">← Back to Dashboard</a>
+                <a href="<?= base_url('logout') ?>">Logout</a>
             </div>
         </div>
 
-        <div class="card">
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Username</th>
-                        <th>Email</th>
-                        <th>Groups</th>
-                        <th>Status</th>
-                        <th>Created At</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if (empty($users)): ?>
-                        <tr>
-                            <td colspan="7" style="text-align: center; padding: 40px;">
-                                No users found
-                            </td>
-                        </tr>
-                    <?php else: ?>
-                        <?php foreach ($users as $user): ?>
-                            <tr>
-                                <td><?= esc($user->id) ?></td>
-                                <td><strong><?= esc($user->username) ?></strong></td>
-                                <td><?= esc($user->email) ?></td>
-                                <td>
-                                    <?php if (!empty($user->groups)): ?>
-                                        <?php foreach ($user->groups as $group): ?>
-                                            <span class="badge badge-<?= esc($group) ?>">
-                                                <?= esc(ucfirst($group)) ?>
-                                            </span>
-                                        <?php endforeach; ?>
-                                    <?php else: ?>
-                                        <span style="color: #999;">No group</span>
-                                    <?php endif; ?>
-                                </td>
-                                <td>
-                                    <?php if ($user->active): ?>
-                                        <span class="badge badge-active">Active</span>
-                                    <?php else: ?>
-                                        <span class="badge badge-banned">Banned</span>
-                                    <?php endif; ?>
-                                </td>
-                                <td><?= date('Y-m-d H:i', strtotime($user->created_at)) ?></td>
-                                <td>
-                                    <div class="actions">
-                                        <a href="<?= base_url('admin/users/show/' . $user->id) ?>" class="btn btn-info btn-sm"
-                                            title="View Details">
-                                            👁️
-                                        </a>
-                                        <a href="<?= base_url('admin/users/edit/' . $user->id) ?>"
-                                            class="btn btn-primary btn-sm" title="Edit">
-                                            ✏️
-                                        </a>
-                                        <a href="<?= base_url('admin/users/permissions/' . $user->id) ?>"
-                                            class="btn btn-warning btn-sm" title="Permissions">
-                                            🔐
-                                        </a>
-
-                                        <?php if ($user->active): ?>
-                                            <button onclick="banUser(<?= $user->id ?>)" class="btn btn-warning btn-sm"
-                                                title="Ban User">
-                                                🚫
-                                            </button>
-                                        <?php else: ?>
-                                            <button onclick="unbanUser(<?= $user->id ?>)" class="btn btn-success btn-sm"
-                                                title="Unban User">
-                                                ✅
-                                            </button>
-                                        <?php endif; ?>
-
-                                        <?php if ($user->id != auth()->user()->id): ?>
-                                            <button onclick="deleteUser(<?= $user->id ?>)" class="btn btn-danger btn-sm"
-                                                title="Delete">
-                                                🗑️
-                                            </button>
-                                        <?php endif; ?>
-                                    </div>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </tbody>
-            </table>
-
-            <?php if (isset($pager)): ?>
-                <div style="padding: 20px; text-align: center;">
-                    <?= $pager->links() ?>
+        <div class="admin-container">
+            <?php if (session('message')): ?>
+                <div class="alert alert-success">
+                    <?= session('message') ?>
                 </div>
             <?php endif; ?>
+
+            <?php if (session('error')): ?>
+                <div class="alert alert-danger">
+                    <?= session('error') ?>
+                </div>
+            <?php endif; ?>
+
+            <!-- <div class="header">
+                <h2>All Users (<?= count($users) ?>)</h2>
+                <div style="display: flex; gap: 10px;">
+                    <form action="<?= base_url('admin/users/search') ?>" method="get" class="search-box">
+                        <input type="text" name="q" placeholder="Search by username or email..."
+                            value="<?= esc($query ?? '') ?>">
+                        <button type="submit" class="btn btn-primary">Search</button>
+                    </form>
+                    <a href="<?= base_url('admin/users/create') ?>" class="btn btn-success">+ Add New User</a>
+                </div>
+            </div> -->
+
+            <div class="table-header">
+                <h2>All Users (<?= count($users) ?>)</h2>
+
+                <div class="table-actions">
+                    <form action="<?= base_url('admin/users/search') ?>" method="get">
+                        <input type="text" name="q" placeholder="Search username / email">
+                        <button class="btn btn-primary">Search</button>
+                    </form>
+
+                    <a href="<?= base_url('admin/users/create') ?>" class="btn btn-success">
+                        + Add User
+                    </a>
+                </div>
+            </div>
+
+
+            <div class="card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Groups</th>
+                            <th>Status</th>
+                            <th>Created At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (empty($users)): ?>
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 40px;">
+                                    No users found
+                                </td>
+                            </tr>
+                        <?php else: ?>
+                            <?php foreach ($users as $user): ?>
+                                <tr>
+                                    <td><?= esc($user->id) ?></td>
+                                    <td><strong><?= esc($user->username) ?></strong></td>
+                                    <td><?= esc($user->email) ?></td>
+                                    <td>
+                                        <?php if (!empty($user->groups)): ?>
+                                            <?php foreach ($user->groups as $group): ?>
+                                                <span class="badge badge-<?= esc($group) ?>">
+                                                    <?= esc(ucfirst($group)) ?>
+                                                </span>
+                                            <?php endforeach; ?>
+                                        <?php else: ?>
+                                            <span style="color: #999;">No group</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <?php if ($user->active): ?>
+                                            <span class="badge badge-active">Active</span>
+                                        <?php else: ?>
+                                            <span class="badge badge-banned">Banned</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td><?= date('Y-m-d H:i', strtotime($user->created_at)) ?></td>
+                                    <td>
+                                        <div class="actions">
+                                            <a href="<?= base_url('admin/users/show/' . $user->id) ?>" class="btn btn-info btn-sm"
+                                                title="View Details">
+                                                👁️
+                                            </a>
+                                            <a href="<?= base_url('admin/users/edit/' . $user->id) ?>"
+                                                class="btn btn-primary btn-sm" title="Edit">
+                                                ✏️
+                                            </a>
+                                            <a href="<?= base_url('admin/users/permissions/' . $user->id) ?>"
+                                                class="btn btn-warning btn-sm" title="Permissions">
+                                                🔐
+                                            </a>
+
+                                            <?php if ($user->active): ?>
+                                                <button onclick="banUser(<?= $user->id ?>)" class="btn btn-warning btn-sm"
+                                                    title="Ban User">
+                                                    🚫
+                                                </button>
+                                            <?php else: ?>
+                                                <button onclick="unbanUser(<?= $user->id ?>)" class="btn btn-success btn-sm"
+                                                    title="Unban User">
+                                                    ✅
+                                                </button>
+                                            <?php endif; ?>
+
+                                            <?php if ($user->id != auth()->user()->id): ?>
+                                                <button onclick="deleteUser(<?= $user->id ?>)" class="btn btn-danger btn-sm"
+                                                    title="Delete">
+                                                    🗑️
+                                                </button>
+                                            <?php endif; ?>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+
+                <?php if (isset($pager)): ?>
+                    <div style="padding: 20px; text-align: center;">
+                        <?= $pager->links() ?>
+                    </div>
+                <?php endif; ?>
+            </div>
         </div>
     </div>
 

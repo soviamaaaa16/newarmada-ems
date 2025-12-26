@@ -136,9 +136,6 @@
       
         const shouldOpen = isActive || hasActiveDescendant;
 
-        console.log("ACTIVE:", activeId, typeof activeId);
-        console.log("NODE:", n.id, typeof n.id);
-
         html += `
           <li>
             <div class="folder-node ${isActive ? 'active' : ''}" data-id="${n.id}">

@@ -19,7 +19,7 @@ class App extends BaseConfig
     public string $baseURL = 'http://localhost:8080/';
 
     // public string $baseURL = 'https://56d657b831d9.ngrok-free.app/';
-    // public string $baseURL = 'https://picture-truck-ricky-teaching.trycloudflare.com/';
+    // public string $baseURL = 'https://stood-redhead-project-colours.trycloudflare.com/';
 
     /**
      * Allowed Hostnames in the Site URL other than the hostname in the baseURL.

@@ -17,7 +17,7 @@
     <div class="footer-left text-center text-sm-start">
       <strong>
         Copyright &copy; 2025
-        <a href="https://newarmada.biz/" target="_blank">IT - HRD Department</a>.
+        <a href="https://newarmada.biz/" target="_blank">IT - HRD & HSE Department</a>.
       </strong>
       PT. Mekar Armada Jaya |
       <a href="https://www.termsfeed.com/live/59d82317-1041-4303-8bbd-40e8f545eaba"

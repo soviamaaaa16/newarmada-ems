@@ -11324,7 +11324,33 @@ main {
   min-height: 0;   /* WAJIB */
 }
 
+.main-content {
+  position: relative;
+  min-height: calc(100vh - 56px);
+  background-color: #f8f9fa;
+}
 
+.main-content::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("/assets/img/ISO.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 400px auto;
+  opacity: 0.06;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.main-content > * {
+  position: relative;
+  z-index: 1;
+}
+
+.main-content.is-empty::before {
+  display: none;
+}
 
 
 
