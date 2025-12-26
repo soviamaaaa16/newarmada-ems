@@ -292,47 +292,6 @@
         .pdf-canvas {
             max-width: 100% !important;
         }
-
-        #searchInput {
-            width: 100%;
-            font-size: 14px;
-            padding: 10px 16px !important;
-            border-radius: 30px !important;
-        }
-
-        /* Bungkus tombol jadi dua baris otomatis */
-        .action-row,
-        .row.mb-4.position-relative .col {
-            flex-wrap: wrap !important;
-            gap: 8px !important;
-            justify-content: center !important;
-        }
-
-        /* Tombol Buat Folder & Upload jadi full width */
-        .row.mb-4 .btn.btn-light {
-            font-size: 13px;
-            padding: 10px 0 !important;
-            border-radius: 25px;
-        }
-
-        .btn-group button {
-            padding: 6px 10px !important;
-            font-size: 14px;
-        }
-
-        .btn-group.position-absolute button {
-            padding: 4px 8px !important;
-            font-size: 12px !important;
-        }
-    
-        .btn-group.position-absolute i {
-            font-size: 14px !important;
-        }
-
-        #listViewBtn, #gridViewBtn {
-            min-width: 32px !important;
-            height: 32px !important;
-        }
     }
 
     @media (max-width: 480px) {
@@ -462,7 +421,7 @@
     </div>
 
     <!-- Action Buttons -->
-    <div class="row mb-4 position-relative action-row">
+    <div class="row mb-4 position-relative">
         <div class="col d-flex justify-content-center align-items-center gap-2 position-relative">
 
             <?php if (auth()->loggedIn()) {
@@ -1190,7 +1149,13 @@
         // Encode URL untuk Office Viewer
         // const viewUrl = fileUrl.replace('/download/', '/view/');
         // Untuk Office Viewer, gunakan public-view
-        const viewUrl = fileUrl.replace('/view/', '/public-view/');
+        const viewUrl;
+
+        if (fileUrl.includes('/download/')) {
+            viewUrl = = fileUrl.replace('/download/', '/public-view/');
+        } else if (fileUrl.includes('/view/')) {
+            viewUrl = fileUrl.replace('/view/', '/public-view/');
+        }
         const encodedUrl = encodeURIComponent(viewUrl);
         const officeViewerUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodedUrl}`;
 
